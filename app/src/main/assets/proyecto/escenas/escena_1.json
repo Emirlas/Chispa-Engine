@@ -1,0 +1,7 @@
+{"id":"escena_1","nombre":"Nivel 1","fondo":{"color":"#1B2A41"},"objetos":[
+{"id":"obj_001","nombre":"Jugador","color":"#FF8C1A","tamano":{"ancho":100,"alto":100},"x":0,"y":0,"escala":1.0,"rotacion":0,"visible":true,"capa":2},
+{"id":"obj_002","nombre":"Roca","color":"#3FA7FF","tamano":{"ancho":100,"alto":100},"x":-40,"y":-40,"escala":1.0,"rotacion":0,"visible":true,"capa":1},
+{"id":"obj_003","nombre":"Planta","color":"#5CD65C","tamano":{"ancho":80,"alto":80},"x":300,"y":-150,"escala":1.5,"rotacion":30,"visible":true,"capa":3},
+{"id":"obj_004","nombre":"Gema","color":"#FF5C8A","tamano":{"ancho":80,"alto":80},"x":-350,"y":150,"escala":1.0,"rotacion":45,"visible":true,"capa":3},
+{"id":"obj_005","nombre":"Oculto","color":"#FFFFFF","tamano":{"ancho":120,"alto":120},"x":0,"y":250,"escala":1.0,"rotacion":0,"visible":false,"capa":4}
+]}
