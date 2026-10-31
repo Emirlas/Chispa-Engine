@@ -60,7 +60,8 @@ object CargadorProyecto {
             escala = o.getFloat("escala", 1f),
             rotacion = o.getFloat("rotacion", 0f),
             visible = o.getBoolean("visible", true),
-            capa = o.getInt("capa", 0)
+            capa = o.getInt("capa", 0),
+            scripts = LectorBloques.leerScripts(o.get("scripts"))
         )
     }
 }

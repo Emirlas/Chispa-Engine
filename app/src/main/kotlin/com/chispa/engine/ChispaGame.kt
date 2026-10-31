@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.chispa.engine.core.CargadorProyecto
 import com.chispa.engine.core.Escena
+import com.chispa.engine.core.Interprete
 import com.chispa.engine.core.Proyecto
 
 class ChispaGame : ApplicationAdapter() {
@@ -26,6 +27,7 @@ class ChispaGame : ApplicationAdapter() {
     private var proyecto: Proyecto? = null
     private var escena: Escena? = null
     private var error: String? = null
+    private var interprete: Interprete? = null
 
     override fun create() {
         batch = SpriteBatch()
@@ -45,6 +47,7 @@ class ChispaGame : ApplicationAdapter() {
             val e = CargadorProyecto.cargarEscena("proyecto/escenas/${p.escenaInicial}.json")
             proyecto = p
             escena = e
+            interprete = Interprete(e)
             ancho = p.ancho
             alto = p.alto
         } catch (ex: Exception) {
@@ -61,6 +64,7 @@ class ChispaGame : ApplicationAdapter() {
     }
 
     override fun render() {
+        interprete?.actualizar(Gdx.graphics.deltaTime)
         val e = escena
         val p = proyecto
         val msg = error

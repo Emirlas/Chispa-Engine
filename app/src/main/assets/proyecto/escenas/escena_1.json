@@ -5,3 +5,7 @@
 {"id":"obj_004","nombre":"Gema","color":"#FF5C8A","tamano":{"ancho":80,"alto":80},"x":-350,"y":150,"escala":1.0,"rotacion":45,"visible":true,"capa":3},
 {"id":"obj_005","nombre":"Oculto","color":"#FFFFFF","tamano":{"ancho":120,"alto":120},"x":0,"y":250,"escala":1.0,"rotacion":0,"visible":false,"capa":4}
 ]}
+{"id":"obj_004","nombre":"Gema","color":"#FF5C8A","tamano":{"ancho":80,"alto":80},"x":-350,"y":150,"escala":1.0,"rotacion":45,"visible":true,"capa":3,
+"scripts":[{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"repetir","veces":60,"cuerpo":[{"tipo":"mover","pasos":4}]},{"tipo":"esperar","segundos":1},{"tipo":"rotar","grados":180}]}]}]},
+{"id":"obj_005","nombre":"Oculto","color":"#FFFFFF","tamano":{"ancho":120,"alto":120},"x":0,"y":250,"escala":1.0,"rotacion":0,"visible":false,"capa":4}
+]}

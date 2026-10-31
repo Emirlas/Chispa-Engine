@@ -12,18 +12,25 @@ class Proyecto(
     val escenaInicial: String
 )
 
+class Bloque(val tipo: String, val num: Map<String, Float>, val cuerpo: List<Bloque>) {
+    fun n(nombre: String): Float = num[nombre] ?: 0f
+}
+
+class Script(val evento: String, val bloques: List<Bloque>)
+
 class Objeto(
     val id: String,
     val nombre: String,
     val color: Color,
     val anchoBase: Float,
     val altoBase: Float,
-    val x: Float,
-    val y: Float,
+    var x: Float,
+    var y: Float,
     val escala: Float,
-    val rotacion: Float,
+    var rotacion: Float,
     val visible: Boolean,
-    val capa: Int
+    val capa: Int,
+    val scripts: List<Script>
 )
 
 class Escena(
