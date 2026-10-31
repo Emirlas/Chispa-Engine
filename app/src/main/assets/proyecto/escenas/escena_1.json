@@ -1,10 +1,16 @@
 {"id":"escena_1","nombre":"Nivel 1","fondo":{"color":"#1B2A41"},"objetos":[
 {"id":"obj_001","nombre":"Contador","color":"#FFFFFF","tamano":{"ancho":10,"alto":10},"x":0,"y":0,"escala":1.0,"rotacion":0,"visible":false,"capa":0,
-"scripts":[{"evento":{"tipo":"al_tocar_pantalla"},"bloques":[{"tipo":"cambiar","variable":"toques","valor":1}]}]},
-{"id":"obj_002","nombre":"Planta","color":"#5CD65C","tamano":{"ancho":60,"alto":60},"x":300,"y":-150,"escala":1.0,"rotacion":30,"visible":true,"capa":1,
-"scripts":[{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"repetir","veces":60,"cuerpo":[{"tipo":"mover","pasos":3}]},{"tipo":"rotar","grados":90},{"tipo":"esperar","segundos":0.5}]}]}]},
+"scripts":[
+{"evento":{"tipo":"al_tocar_pantalla"},"bloques":[{"tipo":"cambiar","variable":"toques","valor":1}]},
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"si","condicion":{"tipo":"mayor","a":{"tipo":"var","nombre":"puntos"},"b":9},"cuerpo":[{"tipo":"mostrar_texto","texto":"Ganaste!"}],"sino":[{"tipo":"borrar_texto"}]}]}]}
+]},
+{"id":"obj_002","nombre":"Seguidor","color":"#FF5C8A","tamano":{"ancho":60,"alto":60},"x":-300,"y":0,"escala":1.0,"rotacion":0,"visible":true,"capa":4,
+"scripts":[{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"si","condicion":{"tipo":"tocando_pantalla"},"cuerpo":[{"tipo":"ir_a","x":{"tipo":"toque_x"},"y":{"tipo":"toque_y"}}]}]}]}]},
 {"id":"obj_003","nombre":"Meta","color":"#FF8C1A","tamano":{"ancho":120,"alto":120},"x":0,"y":0,"escala":1.0,"rotacion":0,"visible":true,"capa":2,
-"scripts":[{"evento":{"tipo":"al_tocar_objeto"},"bloques":[{"tipo":"cambiar","variable":"puntos","valor":1},{"tipo":"rotar","grados":72},{"tipo":"mover","pasos":80}]}]},
+"scripts":[
+{"evento":{"tipo":"al_tocar_objeto"},"bloques":[{"tipo":"cambiar","variable":"puntos","valor":1},{"tipo":"ir_a","x":{"tipo":"azar","min":-500,"max":500},"y":{"tipo":"azar","min":-250,"max":250}}]},
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"si","condicion":{"tipo":"tocando_objeto","objeto":"Seguidor"},"cuerpo":[{"tipo":"cambiar","variable":"puntos","valor":1},{"tipo":"ir_a","x":{"tipo":"azar","min":-500,"max":500},"y":{"tipo":"azar","min":-250,"max":250}},{"tipo":"esperar","segundos":0.3}]}]}]}
+]},
 {"id":"obj_004","nombre":"Reiniciar","color":"#E04040","tamano":{"ancho":90,"alto":90},"x":-450,"y":-250,"escala":1.0,"rotacion":0,"visible":true,"capa":3,
 "scripts":[{"evento":{"tipo":"al_tocar_objeto"},"bloques":[{"tipo":"asignar","variable":"puntos","valor":0},{"tipo":"asignar","variable":"toques","valor":0}]}]}
 ]}

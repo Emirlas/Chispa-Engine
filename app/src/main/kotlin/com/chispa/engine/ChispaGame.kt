@@ -67,10 +67,10 @@ class ChispaGame : ApplicationAdapter() {
 
     override fun render() {
         interprete?.actualizar(Gdx.graphics.deltaTime)
-        if (Gdx.input.justTouched()) {
+        if (Gdx.input.isTouched) {
             toque.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
             viewport.unproject(toque)
-            interprete?.alTocar(toque.x, toque.y)
+            interprete?.apoyar(toque.x, toque.y, Gdx.input.justTouched())
         }
         val e = escena
         val p = proyecto
@@ -120,6 +120,12 @@ class ChispaGame : ApplicationAdapter() {
             )
         }
 
+        val mj = interprete?.mensaje()
+        if (!mj.isNullOrEmpty()) {
+            fuente.data.setScale(4f)
+            fuente.draw(batch, mj, -medioAncho, 40f, viewport.worldWidth, Align.center, false)
+            fuente.data.setScale(2f)
+        }
         val tv = interprete?.textoVariables()
         if (!tv.isNullOrEmpty()) fuente.draw(batch, tv, medioAncho - 420f, medioAlto - 20f, 400f, Align.right, false)
         batch.end()
