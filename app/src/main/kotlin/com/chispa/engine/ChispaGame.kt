@@ -30,6 +30,7 @@ class ChispaGame : ApplicationAdapter() {
     private var error: String? = null
     private var interprete: Interprete? = null
     private val toque = Vector3()
+    private val recursos = Recursos()
 
     override fun create() {
         batch = SpriteBatch()
@@ -67,6 +68,7 @@ class ChispaGame : ApplicationAdapter() {
 
     override fun render() {
         interprete?.actualizar(Gdx.graphics.deltaTime)
+        interprete?.let { recursos.reproducir(it.sonidos()) }
         if (Gdx.input.isTouched) {
             toque.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
             viewport.unproject(toque)
@@ -97,15 +99,16 @@ class ChispaGame : ApplicationAdapter() {
         } else if (e != null && p != null) {
             for (o in e.objetos) {
                 if (!o.visible) continue
-                batch.setColor(o.color)
+                val tx = recursos.textura(o.imagen)
+                batch.setColor(if (tx == null) o.color else Color.WHITE)
                 batch.draw(
-                    blanca,
+                    tx ?: blanca,
                     o.x - o.anchoBase / 2f, o.y - o.altoBase / 2f,
                     o.anchoBase / 2f, o.altoBase / 2f,
                     o.anchoBase, o.altoBase,
                     o.escala, o.escala,
                     o.rotacion,
-                    0, 0, 1, 1,
+                    0, 0, tx?.width ?: 1, tx?.height ?: 1,
                     false, false
                 )
             }
@@ -135,5 +138,6 @@ class ChispaGame : ApplicationAdapter() {
         batch.dispose()
         blanca.dispose()
         fuente.dispose()
+        recursos.liberar()
     }
 }

@@ -41,6 +41,8 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
 
     fun mensaje(): String = ctx.mensaje
 
+    fun sonidos(): MutableList<String> = ctx.sonidos
+
     companion object {
         const val PASO = 1f / 60f
     }

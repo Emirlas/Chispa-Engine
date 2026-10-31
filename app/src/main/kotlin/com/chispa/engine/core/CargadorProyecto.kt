@@ -53,6 +53,7 @@ object CargadorProyecto {
         return Objeto(
             id = o.getString("id", "obj"),
             nombre = o.getString("nombre", "Objeto"),
+            imagen = o.getString("imagen", null),
             color = Color.valueOf(o.getString("color", "#FFFFFF")),
             anchoBase = tamano?.getFloat("ancho", 64f) ?: 64f,
             altoBase = tamano?.getFloat("alto", 64f) ?: 64f,

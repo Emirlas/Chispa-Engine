@@ -31,6 +31,7 @@ class Objeto(
     val id: String,
     val nombre: String,
     val color: Color,
+    val imagen: String?,
     val anchoBase: Float,
     val altoBase: Float,
     var x: Float,
