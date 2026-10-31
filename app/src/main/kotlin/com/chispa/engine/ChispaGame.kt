@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Align
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.chispa.engine.core.CargadorProyecto
@@ -28,6 +29,7 @@ class ChispaGame : ApplicationAdapter() {
     private var escena: Escena? = null
     private var error: String? = null
     private var interprete: Interprete? = null
+    private val toque = Vector3()
 
     override fun create() {
         batch = SpriteBatch()
@@ -47,7 +49,7 @@ class ChispaGame : ApplicationAdapter() {
             val e = CargadorProyecto.cargarEscena("proyecto/escenas/${p.escenaInicial}.json")
             proyecto = p
             escena = e
-            interprete = Interprete(e)
+            interprete = Interprete(e, p.variables)
             ancho = p.ancho
             alto = p.alto
         } catch (ex: Exception) {
@@ -65,6 +67,11 @@ class ChispaGame : ApplicationAdapter() {
 
     override fun render() {
         interprete?.actualizar(Gdx.graphics.deltaTime)
+        if (Gdx.input.justTouched()) {
+            toque.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
+            viewport.unproject(toque)
+            interprete?.alTocar(toque.x, toque.y)
+        }
         val e = escena
         val p = proyecto
         val msg = error
@@ -113,6 +120,8 @@ class ChispaGame : ApplicationAdapter() {
             )
         }
 
+        val tv = interprete?.textoVariables()
+        if (!tv.isNullOrEmpty()) fuente.draw(batch, tv, medioAncho - 420f, medioAlto - 20f, 400f, Align.right, false)
         batch.end()
     }
 

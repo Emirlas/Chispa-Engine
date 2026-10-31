@@ -9,11 +9,20 @@ class Proyecto(
     val ancho: Float,
     val alto: Float,
     val orientacion: String,
-    val escenaInicial: String
+    val escenaInicial: String,
+    val variables: Map<String, Float>
 )
 
-class Bloque(val tipo: String, val num: Map<String, Float>, val cuerpo: List<Bloque>) {
+class Bloque(
+    val tipo: String,
+    val num: Map<String, Float>,
+    val txt: Map<String, String>,
+    val sub: Map<String, Bloque>,
+    val cuerpo: List<Bloque>,
+    val sino: List<Bloque>
+) {
     fun n(nombre: String): Float = num[nombre] ?: 0f
+    fun t(nombre: String): String = txt[nombre] ?: ""
 }
 
 class Script(val evento: String, val bloques: List<Bloque>)
