@@ -80,6 +80,10 @@ class MainActivity : Activity() {
         val bJugar = Button(this)
         bJugar.text = "Jugar"
         bJugar.setOnClickListener { abrir(nombre) }
+        val bEditar = Button(this)
+        bEditar.text = "Editar"
+        bEditar.setOnClickListener { editar(nombre) }
+        f.addView(bEditar)
         f.addView(bJugar)
 
         val bBorrar = Button(this)
@@ -119,6 +123,12 @@ class MainActivity : Activity() {
 
     private fun abrir(nombre: String) {
         val i = Intent(this, AndroidLauncher::class.java)
+        i.putExtra("proyecto", nombre)
+        startActivity(i)
+    }
+
+    private fun editar(nombre: String) {
+        val i = Intent(this, EditorActivity::class.java)
         i.putExtra("proyecto", nombre)
         startActivity(i)
     }
