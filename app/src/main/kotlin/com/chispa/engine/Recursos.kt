@@ -1,10 +1,11 @@
 package com.chispa.engine
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.Texture
 
-class Recursos {
+class Recursos(private val base: FileHandle) {
 
     private val texturas = HashMap<String, Texture>()
     private val sonidos = HashMap<String, Sound>()
@@ -15,7 +16,7 @@ class Recursos {
         var t = texturas[nombre]
         if (t == null) {
             try {
-                t = Texture(Gdx.files.internal("proyecto/assets/imagenes/" + nombre))
+                t = Texture(base.child("assets/imagenes/" + nombre))
                 t.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest)
                 texturas[nombre] = t
             } catch (ex: Exception) {
@@ -32,7 +33,7 @@ class Recursos {
             var s = sonidos[n]
             if (s == null) {
                 try {
-                    s = Gdx.audio.newSound(Gdx.files.internal("proyecto/assets/sonidos/" + n))
+                    s = Gdx.audio.newSound(base.child("assets/sonidos/" + n))
                     sonidos[n] = s
                 } catch (ex: Exception) {
                     fallidos.add(n)

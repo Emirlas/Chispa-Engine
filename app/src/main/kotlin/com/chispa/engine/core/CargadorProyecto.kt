@@ -1,6 +1,6 @@
 package com.chispa.engine.core
 
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.utils.JsonReader
 import com.badlogic.gdx.utils.JsonValue
@@ -9,8 +9,8 @@ object CargadorProyecto {
 
     private val lector = JsonReader()
 
-    fun cargarProyecto(ruta: String): Proyecto {
-        val raiz: JsonValue = lector.parse(Gdx.files.internal(ruta))
+    fun cargarProyecto(ruta: FileHandle): Proyecto {
+        val raiz: JsonValue = lector.parse(ruta)
         val pantalla: JsonValue? = raiz.get("pantalla")
         return Proyecto(
             formato = raiz.getInt("formato", 1),
@@ -24,8 +24,8 @@ object CargadorProyecto {
         )
     }
 
-    fun cargarEscena(ruta: String): Escena {
-        val raiz: JsonValue = lector.parse(Gdx.files.internal(ruta))
+    fun cargarEscena(ruta: FileHandle): Escena {
+        val raiz: JsonValue = lector.parse(ruta)
         val fondo: JsonValue? = raiz.get("fondo")
         val colorFondo = Color.valueOf(fondo?.getString("color", "#000000") ?: "#000000")
 

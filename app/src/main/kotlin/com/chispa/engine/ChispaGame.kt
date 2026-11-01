@@ -2,6 +2,7 @@ package com.chispa.engine
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
@@ -17,7 +18,7 @@ import com.chispa.engine.core.Escena
 import com.chispa.engine.core.Interprete
 import com.chispa.engine.core.Proyecto
 
-class ChispaGame : ApplicationAdapter() {
+class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
 
     private lateinit var camera: OrthographicCamera
     private lateinit var viewport: FitViewport
@@ -30,7 +31,8 @@ class ChispaGame : ApplicationAdapter() {
     private var error: String? = null
     private var interprete: Interprete? = null
     private val toque = Vector3()
-    private val recursos = Recursos()
+    private lateinit var recursos: Recursos
+    private lateinit var base: FileHandle
 
     override fun create() {
         batch = SpriteBatch()
@@ -43,11 +45,13 @@ class ChispaGame : ApplicationAdapter() {
         blanca = Texture(pixmap)
         pixmap.dispose()
 
+        base = Gdx.files.local(rutaBase)
+        recursos = Recursos(base)
         var ancho = 1280f
         var alto = 720f
         try {
-            val p = CargadorProyecto.cargarProyecto("proyecto/proyecto.json")
-            val e = CargadorProyecto.cargarEscena("proyecto/escenas/${p.escenaInicial}.json")
+            val p = CargadorProyecto.cargarProyecto(base.child("proyecto.json"))
+            val e = CargadorProyecto.cargarEscena(base.child("escenas/" + p.escenaInicial + ".json"))
             proyecto = p
             escena = e
             interprete = Interprete(e, p.variables)
@@ -146,7 +150,7 @@ class ChispaGame : ApplicationAdapter() {
     private fun cambiarEscena(nombre: String) {
         val ip = interprete ?: return
         try {
-            val nueva = CargadorProyecto.cargarEscena("proyecto/escenas/" + nombre + ".json")
+            val nueva = CargadorProyecto.cargarEscena(base.child("escenas/" + nombre + ".json"))
             escena = nueva
             interprete = Interprete(nueva, ip.variablesActuales())
         } catch (ex: Exception) {
