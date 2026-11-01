@@ -1,0 +1,9 @@
+{"id":"menu","nombre":"Menu","fondo":{"color":"#2B1B41"},"objetos":[
+{"id":"m1","nombre":"Inicio","color":"#FFFFFF","tamano":{"ancho":10,"alto":10},"x":0,"y":0,"escala":1.0,"rotacion":0,"visible":false,"capa":0,
+"scripts":[
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"mostrar_texto","texto":"Toca para jugar"}]},
+{"evento":{"tipo":"al_tocar_pantalla"},"bloques":[{"tipo":"ir_a_escena","escena":"escena_1"}]}
+]},
+{"id":"m2","nombre":"Moneda","imagen":"moneda.png","tamano":{"ancho":96,"alto":96},"x":0,"y":-160,"escala":1.0,"rotacion":0,"visible":true,"capa":1,
+"scripts":[{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"rotar","grados":3}]}]}]}
+]}

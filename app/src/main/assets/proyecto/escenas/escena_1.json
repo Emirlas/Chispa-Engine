@@ -2,7 +2,7 @@
 {"id":"obj_001","nombre":"Contador","color":"#FFFFFF","tamano":{"ancho":10,"alto":10},"x":0,"y":0,"escala":1.0,"rotacion":0,"visible":false,"capa":0,
 "scripts":[
 {"evento":{"tipo":"al_tocar_pantalla"},"bloques":[{"tipo":"cambiar","variable":"toques","valor":1}]},
-{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"si","condicion":{"tipo":"mayor","a":{"tipo":"var","nombre":"puntos"},"b":9},"cuerpo":[{"tipo":"mostrar_texto","texto":"Ganaste!"}],"sino":[{"tipo":"borrar_texto"}]}]}]}
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"si","condicion":{"tipo":"mayor","a":{"tipo":"var","nombre":"puntos"},"b":9},"cuerpo":[{"tipo":"mostrar_texto","texto":"Ganaste!"},{"tipo":"esperar","segundos":1.5},{"tipo":"ir_a_escena","escena":"escena_2"}],"sino":[{"tipo":"borrar_texto"}]}]}]}
 ]},
 {"id":"obj_002","nombre":"Heroe","imagen":"heroe.png","tamano":{"ancho":64,"alto":64},"x":-300,"y":0,"escala":1.0,"rotacion":0,"visible":true,"capa":4,
 "scripts":[{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"si","condicion":{"tipo":"tocando_pantalla"},"cuerpo":[{"tipo":"ir_a","x":{"tipo":"toque_x"},"y":{"tipo":"toque_y"}}]}]}]}]},

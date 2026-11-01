@@ -69,6 +69,8 @@ class ChispaGame : ApplicationAdapter() {
     override fun render() {
         interprete?.actualizar(Gdx.graphics.deltaTime)
         interprete?.let { recursos.reproducir(it.sonidos()) }
+        val pedido = interprete?.escenaPendiente()
+        if (pedido != null) cambiarEscena(pedido)
         if (Gdx.input.isTouched) {
             toque.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f)
             viewport.unproject(toque)
@@ -139,5 +141,17 @@ class ChispaGame : ApplicationAdapter() {
         blanca.dispose()
         fuente.dispose()
         recursos.liberar()
+    }
+
+    private fun cambiarEscena(nombre: String) {
+        val ip = interprete ?: return
+        try {
+            val nueva = CargadorProyecto.cargarEscena("proyecto/escenas/" + nombre + ".json")
+            escena = nueva
+            interprete = Interprete(nueva, ip.variablesActuales())
+        } catch (ex: Exception) {
+            error = "No se pudo abrir la escena " + nombre + ": " + ex.toString()
+            interprete = null
+        }
     }
 }

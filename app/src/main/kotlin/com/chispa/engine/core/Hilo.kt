@@ -98,6 +98,7 @@ class Hilo(
             "mostrar_texto" -> ctx.mensaje = b.t("texto")
             "borrar_texto" -> ctx.mensaje = ""
             "reproducir_sonido" -> ctx.sonidos.add(b.t("sonido"))
+            "ir_a_escena" -> ctx.escenaPendiente = b.t("escena")
             "detener_script" -> pila.clear()
         }
         return false

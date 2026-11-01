@@ -1,0 +1,9 @@
+{"id":"escena_2","nombre":"Victoria","fondo":{"color":"#1F4D2B"},"objetos":[
+{"id":"v1","nombre":"Fin","color":"#FFFFFF","tamano":{"ancho":10,"alto":10},"x":0,"y":0,"escala":1.0,"rotacion":0,"visible":false,"capa":0,
+"scripts":[
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"mostrar_texto","texto":"Victoria! Toca para volver"}]},
+{"evento":{"tipo":"al_tocar_pantalla"},"bloques":[{"tipo":"asignar","variable":"puntos","valor":0},{"tipo":"asignar","variable":"toques","valor":0},{"tipo":"ir_a_escena","escena":"menu"}]}
+]},
+{"id":"v2","nombre":"Heroe","imagen":"heroe.png","tamano":{"ancho":128,"alto":128},"x":0,"y":-160,"escala":1.0,"rotacion":0,"visible":true,"capa":1,
+"scripts":[{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"ir_a","x":0,"y":-160},{"tipo":"esperar","segundos":0.3},{"tipo":"ir_a","x":0,"y":-110},{"tipo":"esperar","segundos":0.3}]}]}]}
+]}
