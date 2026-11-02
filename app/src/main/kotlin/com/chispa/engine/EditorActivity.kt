@@ -139,6 +139,7 @@ class EditorActivity : Activity() {
         t.setTextColor(Color.WHITE)
         f.addView(t, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         f.addView(boton("Editar") { editarObjeto(i) })
+        f.addView(boton("Scripts") { abrirScripts(i) })
         f.addView(boton("Borrar") { borrarObjeto(i, nombre) })
         return f
     }
@@ -305,6 +306,11 @@ class EditorActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 2) {
+            cargarEscena()
+            refrescar()
+            return
+        }
         val uri = data?.data
         if (requestCode != 1 || resultCode != RESULT_OK || uri == null) return
         try {
@@ -326,5 +332,14 @@ class EditorActivity : Activity() {
         } catch (ex: Exception) {
             campoImagen?.setText("")
         }
+    }
+
+    private fun abrirScripts(i: Int) {
+        guardarEscena()
+        val intento = Intent(this, ScriptsActivity::class.java)
+        intento.putExtra("proyecto", nombreProyecto)
+        intento.putExtra("escena", escenaId)
+        intento.putExtra("indice", i)
+        startActivityForResult(intento, 2)
     }
 }
