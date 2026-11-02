@@ -6,7 +6,9 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
@@ -30,6 +32,7 @@ class EditorActivity : Activity() {
     private lateinit var titulo: TextView
     private lateinit var lista: LinearLayout
     private var campoImagen: EditText? = null
+    private var campoFuente: EditText? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -267,6 +270,15 @@ class EditorActivity : Activity() {
             elegirImagen()
         }
         caja.addView(bImagen)
+        val texto = campo(caja, "Texto (opcional, usa {variable})", o.optString("texto", ""), false)
+        val tamT = campo(caja, "Tamano del texto", num(o.optDouble("tamTexto", 40.0)), true)
+        val alinT = campo(caja, "Alineacion (izquierda, centro, derecha)", o.optString("alinTexto", "centro"), false)
+        val estT = campo(caja, "Estilo (normal, negrita, sombra, contorno)", o.optString("estiloTexto", "normal"), false)
+        val fueT = campo(caja, "Fuente (archivo .ttf, vacio = predeterminada)", o.optString("fuenteTexto", ""), false)
+        caja.addView(boton("Elegir fuente (.ttf) del telefono") {
+            campoFuente = fueT
+            elegirFuente()
+        })
         val visible = CheckBox(this)
         visible.text = "Visible"
         visible.setTextColor(Color.WHITE)
@@ -289,6 +301,12 @@ class EditorActivity : Activity() {
                 if (Regex("^#[0-9A-Fa-f]{6}$").matches(c)) o.put("color", c)
                 val im = imagen.text.toString().trim()
                 if (im.isEmpty()) o.remove("imagen") else o.put("imagen", im)
+                val tt = texto.text.toString()
+                if (tt.isEmpty()) o.remove("texto") else o.put("texto", tt)
+                o.put("tamTexto", maxOf(4.0, leer(tamT, 40.0)))
+                o.put("alinTexto", alinT.text.toString().trim().ifEmpty { "centro" })
+                o.put("estiloTexto", estT.text.toString().trim().ifEmpty { "normal" })
+                o.put("fuenteTexto", fueT.text.toString().trim())
                 o.put("visible", visible.isChecked)
                 guardarEscena()
                 refrescar()
@@ -309,6 +327,10 @@ class EditorActivity : Activity() {
         if (requestCode == 2) {
             cargarEscena()
             refrescar()
+            return
+        }
+        if (requestCode == 3) {
+            copiarFuente(data?.data)
             return
         }
         val uri = data?.data
@@ -341,5 +363,30 @@ class EditorActivity : Activity() {
         intento.putExtra("escena", escenaId)
         intento.putExtra("indice", i)
         startActivityForResult(intento, 2)
+    }
+
+    private fun elegirFuente() {
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.type = "*/*"
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(i, 3)
+    }
+
+    private fun copiarFuente(uri: Uri?) {
+        if (uri == null) return
+        try {
+            var nombre = "fuente_" + System.currentTimeMillis() + ".ttf"
+            contentResolver.query(uri, null, null, null, null)?.use { c ->
+                val col = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (col >= 0 && c.moveToFirst()) nombre = c.getString(col)
+            }
+            nombre = nombre.replace(Regex("[^A-Za-z0-9._-]"), "_")
+            val destino = File(dir, "assets/fuentes/" + nombre)
+            destino.parentFile?.mkdirs()
+            contentResolver.openInputStream(uri)?.use { e -> destino.outputStream().use { s -> e.copyTo(s) } }
+            campoFuente?.setText(nombre)
+        } catch (ex: Exception) {
+            campoFuente?.setText("")
+        }
     }
 }

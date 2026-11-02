@@ -4,6 +4,7 @@ class Contexto(val objetos: List<Objeto>) {
     val variables = LinkedHashMap<String, Float>()
     val azar = java.util.Random()
     var mensaje = ""
+    val textos = LinkedHashMap<String, TextoDef>()
     var escenaPendiente: String? = null
     val sonidos = ArrayList<String>()
     var tiempo = 0f

@@ -39,7 +39,19 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
         if (nuevo) alTocar(x, y)
     }
 
-    fun mensaje(): String = ctx.mensaje
+    fun reemplazar(texto: String): String {
+        var t = texto
+        for ((k, v) in ctx.variables) {
+            t = t.replace("{" + k + "}", if (v % 1f == 0f) v.toInt().toString() else v.toString())
+        }
+        return t
+    }
+
+    fun textos(): List<TextoDef> {
+        val r = ArrayList<TextoDef>()
+        for (t in ctx.textos.values) r.add(t.copy(texto = reemplazar(t.texto)))
+        return r
+    }
 
     fun sonidos(): MutableList<String> = ctx.sonidos
 

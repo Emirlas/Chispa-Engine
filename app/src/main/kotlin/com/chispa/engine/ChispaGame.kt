@@ -16,6 +16,8 @@ import com.badlogic.gdx.utils.viewport.FitViewport
 import com.chispa.engine.core.CargadorProyecto
 import com.chispa.engine.core.Escena
 import com.chispa.engine.core.Interprete
+import com.chispa.engine.core.Objeto
+import com.chispa.engine.core.TextoDef
 import com.chispa.engine.core.Proyecto
 
 class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
@@ -33,6 +35,7 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
     private val toque = Vector3()
     private lateinit var recursos: Recursos
     private lateinit var base: FileHandle
+    private lateinit var textos: Textos
 
     override fun create() {
         batch = SpriteBatch()
@@ -47,6 +50,7 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
 
         base = Gdx.files.local(rutaBase)
         recursos = Recursos(base)
+        textos = Textos()
         var ancho = 1280f
         var alto = 720f
         try {
@@ -105,6 +109,10 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
         } else if (e != null && p != null) {
             for (o in e.objetos) {
                 if (!o.visible) continue
+                if (o.texto != null) {
+                    dibujarTextoObjeto(o)
+                    continue
+                }
                 val tx = recursos.textura(o.imagen)
                 batch.setColor(if (tx == null) o.color else Color.WHITE)
                 batch.draw(
@@ -129,11 +137,8 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
             )
         }
 
-        val mj = interprete?.mensaje()
-        if (!mj.isNullOrEmpty()) {
-            fuente.data.setScale(4f)
-            fuente.draw(batch, mj, -medioAncho, 40f, viewport.worldWidth, Align.center, false)
-            fuente.data.setScale(2f)
+        interprete?.let { ip ->
+            for (td in ip.textos()) textos.dibujar(batch, base, td)
         }
         val tv = interprete?.textoVariables()
         if (!tv.isNullOrEmpty()) fuente.draw(batch, tv, medioAncho - 420f, medioAlto - 20f, 400f, Align.right, false)
@@ -145,6 +150,7 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
         blanca.dispose()
         fuente.dispose()
         recursos.liberar()
+        textos.liberar()
     }
 
     private fun cambiarEscena(nombre: String) {
@@ -157,5 +163,11 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
             error = "No se pudo abrir la escena " + nombre + ": " + ex.toString()
             interprete = null
         }
+    }
+
+    private fun dibujarTextoObjeto(o: Objeto) {
+        val original = o.texto ?: ""
+        val t = interprete?.reemplazar(original) ?: original
+        textos.dibujar(batch, base, TextoDef(t, o.x, o.y, o.color, o.tamTexto * o.escala, o.alinTexto, o.estiloTexto, o.fuenteTexto, 0f))
     }
 }

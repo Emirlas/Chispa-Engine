@@ -1,5 +1,6 @@
 package com.chispa.engine.core
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.MathUtils
 import kotlin.math.abs
 
@@ -95,8 +96,24 @@ class Hilo(
                     return true
                 }
             }
-            "mostrar_texto" -> ctx.mensaje = b.t("texto")
-            "borrar_texto" -> ctx.mensaje = ""
+            "mostrar_texto" -> {
+                val id = b.t("id").ifEmpty { "mensaje" }
+                ctx.textos[id] = TextoDef(
+                    b.t("texto"),
+                    if (tiene(b, "x")) valor(b, "x") else 0f,
+                    if (tiene(b, "y")) valor(b, "y") else 40f,
+                    colorDe(b.t("color")),
+                    if (tiene(b, "tamano")) valor(b, "tamano") else 60f,
+                    b.t("alineacion").ifEmpty { "centro" },
+                    b.t("estilo").ifEmpty { "normal" },
+                    b.t("fuente"),
+                    0f
+                )
+            }
+            "borrar_texto" -> {
+                val id = b.t("id")
+                if (id.isEmpty()) ctx.textos.clear() else ctx.textos.remove(id)
+            }
             "reproducir_sonido" -> ctx.sonidos.add(b.t("sonido"))
             "ir_a_escena" -> ctx.escenaPendiente = b.t("escena")
             "detener_script" -> pila.clear()
@@ -156,5 +173,16 @@ class Hilo(
             }
         }
         return false
+    }
+
+    private fun tiene(b: Bloque, k: String): Boolean = b.num.containsKey(k) || b.sub.containsKey(k)
+
+    private fun colorDe(s: String): Color {
+        if (s.isEmpty()) return Color.WHITE
+        return try {
+            Color.valueOf(s)
+        } catch (ex: Exception) {
+            Color.WHITE
+        }
     }
 }

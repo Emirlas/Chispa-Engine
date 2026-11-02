@@ -32,11 +32,12 @@ class ScriptsActivity : Activity() {
     private val numericos = mapOf(
         "mover" to listOf("pasos"), "ir_a" to listOf("x", "y"), "rotar" to listOf("grados"),
         "esperar" to listOf("segundos"), "repetir" to listOf("veces"),
-        "asignar" to listOf("valor"), "cambiar" to listOf("valor")
+        "asignar" to listOf("valor"), "cambiar" to listOf("valor"),
+        "mostrar_texto" to listOf("x", "y", "tamano")
     )
     private val textos = mapOf(
         "asignar" to listOf("variable"), "cambiar" to listOf("variable"),
-        "mostrar_texto" to listOf("texto"), "reproducir_sonido" to listOf("sonido"),
+        "mostrar_texto" to listOf("texto", "id", "color", "alineacion", "estilo", "fuente"), "borrar_texto" to listOf("id"), "reproducir_sonido" to listOf("sonido"),
         "ir_a_escena" to listOf("escena")
     )
 
@@ -323,7 +324,13 @@ class ScriptsActivity : Activity() {
                 b.put("sino", JSONArray())
             }
             "esperar_hasta" -> b.put("condicion", JSONObject().put("tipo", "tocando_pantalla"))
-            "mostrar_texto" -> b.put("texto", "Hola")
+            "mostrar_texto" -> {
+                b.put("texto", "Hola")
+                b.put("x", 0)
+                b.put("y", 40)
+                b.put("tamano", 60)
+                b.put("color", "#FFFFFF")
+            }
             "reproducir_sonido" -> b.put("sonido", "moneda.wav")
             "ir_a_escena" -> b.put("escena", "menu")
         }
