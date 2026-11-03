@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -25,6 +26,8 @@ class ScriptsActivity : Activity() {
     private lateinit var objeto: JSONObject
     private lateinit var contenido: LinearLayout
     private var escenaId = ""
+    private val claves = arrayOf("num", "var", "azar", "suma", "resta", "mult", "div", "toque_x", "toque_y", "temporizador", "mayor", "menor", "igual", "tocando_pantalla", "tocando_objeto", "y", "o", "no")
+    private val etiquetasExpr = arrayOf("Numero", "Variable", "Azar entre A y B", "Suma A + B", "Resta A - B", "Multiplicacion A x B", "Division A / B", "Posicion X del toque", "Posicion Y del toque", "Temporizador (segundos)", "Condicion: A mayor que B", "Condicion: A menor que B", "Condicion: A igual a B", "Condicion: tocando la pantalla", "Condicion: tocando un objeto", "Condicion: A y B", "Condicion: A o B", "Condicion: no A")
 
     private val tipos = arrayOf("mover", "ir_a", "rotar", "esperar", "repetir", "por_siempre", "asignar", "cambiar", "si", "esperar_hasta", "mostrar_texto", "borrar_texto", "reproducir_sonido", "ir_a_escena", "detener_script")
     private val nombres = arrayOf("Mover pasos", "Ir a x, y", "Rotar grados", "Esperar segundos", "Repetir veces", "Por siempre", "Asignar variable", "Cambiar variable", "Si / sino", "Esperar hasta que", "Mostrar texto", "Borrar texto", "Reproducir sonido", "Ir a escena", "Detener este script")
@@ -352,86 +355,7 @@ class ScriptsActivity : Activity() {
         return e
     }
 
-    private fun construirCondicion(sel: Int, nombre: String, valor: Double): JSONObject? {
-        if (sel == 0) return null
-        if (sel == 4) return JSONObject().put("tipo", "tocando_pantalla")
-        if (sel == 5) return JSONObject().put("tipo", "tocando_objeto").put("objeto", nombre)
-        val op = if (sel == 1) "mayor" else if (sel == 2) "menor" else "igual"
-        val a = JSONObject().put("tipo", "var").put("nombre", nombre)
-        return JSONObject().put("tipo", op).put("a", a).put("b", valor)
-    }
 
-    private fun editarBloque(b: JSONObject) {
-        val tipo = b.optString("tipo")
-        val esCondicion = tipo == "si" || tipo == "esperar_hasta"
-        val caja = LinearLayout(this)
-        caja.orientation = LinearLayout.VERTICAL
-        caja.setPadding(48, 16, 48, 0)
-        val camposNum = LinkedHashMap<String, EditText>()
-        val camposTxt = LinkedHashMap<String, EditText>()
-        val combosTxt = LinkedHashMap<String, Spinner>()
-        for (p in numericos[tipo] ?: emptyList()) {
-            val v = b.opt(p)
-            val calculado = v is JSONObject
-            camposNum[p] = campo(caja, p, if (calculado) "[calculado]" else expr(v), !calculado)
-        }
-        for (p in textos[tipo] ?: emptyList()) {
-            if (p == "alineacion" || p == "estilo" || p == "fuente") {
-                combosTxt[p] = comboCaja(caja, p, opcionesDe(p), b.optString(p))
-            } else {
-                camposTxt[p] = campo(caja, p, b.optString(p), false)
-            }
-        }
-        val selector = Spinner(this)
-        val cNombre = EditText(this)
-        val cValor = EditText(this)
-        if (esCondicion) {
-            val aviso = TextView(this)
-            aviso.text = "Condicion actual: " + expr(b.opt("condicion"))
-            aviso.setTextColor(Color.LTGRAY)
-            caja.addView(aviso)
-            selector.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, condiciones)
-            caja.addView(selector)
-            val t1 = TextView(this)
-            t1.text = "Variable u objeto"
-            t1.setTextColor(Color.LTGRAY)
-            caja.addView(t1)
-            cNombre.setTextColor(Color.WHITE)
-            caja.addView(cNombre)
-            val t2 = TextView(this)
-            t2.text = "Numero"
-            t2.setTextColor(Color.LTGRAY)
-            caja.addView(t2)
-            cValor.setText("0")
-            cValor.setTextColor(Color.WHITE)
-            cValor.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
-            caja.addView(cValor)
-        }
-        val scroll = ScrollView(this)
-        scroll.addView(caja)
-        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
-            .setTitle(nombres[maxOf(0, tipos.indexOf(tipo))])
-            .setView(scroll)
-            .setPositiveButton("Guardar") { _, _ ->
-                for ((p, e) in camposNum) {
-                    val d = e.text.toString().trim().toDoubleOrNull()
-                    if (d != null) b.put(p, d)
-                }
-                for ((p, e) in camposTxt) b.put(p, e.text.toString())
-                for ((p, s) in combosTxt) {
-                    val v = s.selectedItem as String
-                    b.put(p, if (v == "(predeterminada)") "" else v)
-                }
-                if (esCondicion) {
-                    val c = construirCondicion(selector.selectedItemPosition, cNombre.text.toString().trim(), cValor.text.toString().toDoubleOrNull() ?: 0.0)
-                    if (c != null) b.put("condicion", c)
-                }
-                guardar()
-                redibujar()
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
 
     private fun opcionesDe(p: String): List<String> {
         if (p == "alineacion") return listOf("izquierda", "centro", "derecha")
@@ -455,5 +379,195 @@ class ScriptsActivity : Activity() {
         s.setSelection(if (i >= 0) i else 0)
         padre.addView(s)
         return s
+    }
+
+    private fun botonValor(nombre: String, valores: LinkedHashMap<String, Any?>): Button {
+        val btn = Button(this)
+        btn.setAllCaps(false)
+        btn.text = nombre + ": " + expr(valores[nombre])
+        btn.setOnClickListener {
+            editarExpr(nombre, valores[nombre]) { r ->
+                valores[nombre] = r
+                btn.text = nombre + ": " + expr(r)
+            }
+        }
+        return btn
+    }
+
+    private fun editarBloque(b: JSONObject) {
+        val tipo = b.optString("tipo")
+        val caja = LinearLayout(this)
+        caja.orientation = LinearLayout.VERTICAL
+        caja.setPadding(48, 16, 48, 0)
+        val valores = LinkedHashMap<String, Any?>()
+        val nombresValor = ArrayList<String>()
+        nombresValor.addAll(numericos[tipo] ?: emptyList())
+        if (tipo == "si" || tipo == "esperar_hasta") nombresValor.add("condicion")
+        for (p in nombresValor) {
+            valores[p] = b.opt(p)
+            caja.addView(botonValor(p, valores))
+        }
+        val camposTxt = LinkedHashMap<String, EditText>()
+        val combosTxt = LinkedHashMap<String, Spinner>()
+        for (p in textos[tipo] ?: emptyList()) {
+            if (p == "alineacion" || p == "estilo" || p == "fuente") {
+                combosTxt[p] = comboCaja(caja, p, opcionesDe(p), b.optString(p))
+            } else {
+                camposTxt[p] = campo(caja, p, b.optString(p), false)
+            }
+        }
+        val scroll = ScrollView(this)
+        scroll.addView(caja)
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle(nombres[maxOf(0, tipos.indexOf(tipo))])
+            .setView(scroll)
+            .setPositiveButton("Guardar") { _, _ ->
+                for ((k, v) in valores) {
+                    if (v != null) b.put(k, v)
+                }
+                for ((p, e) in camposTxt) b.put(p, e.text.toString())
+                for ((p, s) in combosTxt) {
+                    val v = s.selectedItem as String
+                    b.put(p, if (v == "(predeterminada)") "" else v)
+                }
+                guardar()
+                redibujar()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun claveDe(v: Any?): String {
+        if (v is JSONObject) {
+            val t = v.optString("tipo")
+            return if (claves.contains(t)) t else "num"
+        }
+        return "num"
+    }
+
+    private fun variablesConocidas(): String {
+        val r = java.util.TreeSet<String>()
+        val re = Regex("\"variable\"\\s*:\\s*\"([^\"]+)\"")
+        val escenas = File(dir, "escenas").listFiles()
+        if (escenas != null) {
+            for (f in escenas) {
+                for (m in re.findAll(f.readText())) r.add(m.groupValues[1])
+            }
+        }
+        val pj = JSONObject(File(dir, "proyecto.json").readText())
+        val arr = pj.optJSONArray("variablesGlobales")
+        if (arr != null) {
+            for (i in 0 until arr.length()) r.add(arr.getJSONObject(i).optString("nombre"))
+        }
+        return if (r.isEmpty()) "ninguna" else r.joinToString(", ")
+    }
+
+    private fun editarExpr(titulo: String, actual: Any?, alAceptar: (Any) -> Unit) {
+        val cuerpo = LinearLayout(this)
+        cuerpo.orientation = LinearLayout.VERTICAL
+        cuerpo.setPadding(48, 16, 48, 0)
+        val selector = Spinner(this)
+        selector.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, etiquetasExpr)
+        cuerpo.addView(selector)
+        val zona = LinearLayout(this)
+        zona.orientation = LinearLayout.VERTICAL
+        cuerpo.addView(zona)
+
+        var numero = if (actual is Number) num(actual.toDouble()) else "0"
+        var nombre = ""
+        var a: Any? = 0.0
+        var b: Any? = 0.0
+        if (actual is JSONObject) {
+            nombre = if (actual.has("nombre")) actual.optString("nombre") else actual.optString("objeto")
+            a = if (actual.has("min")) actual.opt("min") else actual.opt("a")
+            b = if (actual.has("max")) actual.opt("max") else actual.opt("b")
+            if (a == null) a = 0.0
+            if (b == null) b = 0.0
+        }
+        var etTexto: EditText? = null
+
+        fun reconstruir(pos: Int) {
+            zona.removeAllViews()
+            etTexto = null
+            val clave = claves[pos]
+            if (clave == "num" || clave == "var" || clave == "tocando_objeto") {
+                val e = EditText(this)
+                e.setTextColor(Color.WHITE)
+                if (clave == "num") {
+                    e.setText(numero)
+                    e.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
+                } else if (clave == "var") {
+                    e.setText(nombre)
+                    e.hint = "Variables: " + variablesConocidas()
+                } else {
+                    e.setText(nombre)
+                    e.hint = "Nombre del objeto"
+                }
+                zona.addView(e)
+                etTexto = e
+            } else if (clave == "toque_x" || clave == "toque_y" || clave == "temporizador" || clave == "tocando_pantalla") {
+                val t = TextView(this)
+                t.text = "Sin parametros."
+                t.setTextColor(Color.LTGRAY)
+                zona.addView(t)
+            } else {
+                val bA = Button(this)
+                bA.setAllCaps(false)
+                bA.text = "A: " + expr(a)
+                bA.setOnClickListener {
+                    editarExpr("A", a) { r ->
+                        a = r
+                        bA.text = "A: " + expr(r)
+                    }
+                }
+                zona.addView(bA)
+                if (clave != "no") {
+                    val bB = Button(this)
+                    bB.setAllCaps(false)
+                    bB.text = "B: " + expr(b)
+                    bB.setOnClickListener {
+                        editarExpr("B", b) { r ->
+                            b = r
+                            bB.text = "B: " + expr(r)
+                        }
+                    }
+                    zona.addView(bB)
+                }
+            }
+        }
+
+        val inicial = maxOf(0, claves.indexOf(claveDe(actual)))
+        selector.setSelection(inicial)
+        reconstruir(inicial)
+        selector.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(padre: AdapterView<*>?, vista: View?, pos: Int, id: Long) {
+                reconstruir(pos)
+            }
+
+            override fun onNothingSelected(padre: AdapterView<*>?) {
+            }
+        }
+        val scroll = ScrollView(this)
+        scroll.addView(cuerpo)
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Valor: " + titulo)
+            .setView(scroll)
+            .setPositiveButton("Aceptar") { _, _ ->
+                val clave = claves[selector.selectedItemPosition]
+                val txt = etTexto?.text?.toString()?.trim() ?: ""
+                val r: Any = when (clave) {
+                    "num" -> txt.toDoubleOrNull() ?: 0.0
+                    "var" -> JSONObject().put("tipo", "var").put("nombre", txt)
+                    "tocando_objeto" -> JSONObject().put("tipo", "tocando_objeto").put("objeto", txt)
+                    "azar" -> JSONObject().put("tipo", "azar").put("min", a ?: 0.0).put("max", b ?: 0.0)
+                    "suma", "resta", "mult", "div", "mayor", "menor", "igual", "y", "o" ->
+                        JSONObject().put("tipo", clave).put("a", a ?: 0.0).put("b", b ?: 0.0)
+                    "no" -> JSONObject().put("tipo", "no").put("a", a ?: 0.0)
+                    else -> JSONObject().put("tipo", clave)
+                }
+                alAceptar(r)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 }
