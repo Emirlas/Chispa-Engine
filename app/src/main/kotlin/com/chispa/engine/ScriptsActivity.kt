@@ -369,13 +369,18 @@ class ScriptsActivity : Activity() {
         caja.setPadding(48, 16, 48, 0)
         val camposNum = LinkedHashMap<String, EditText>()
         val camposTxt = LinkedHashMap<String, EditText>()
+        val combosTxt = LinkedHashMap<String, Spinner>()
         for (p in numericos[tipo] ?: emptyList()) {
             val v = b.opt(p)
             val calculado = v is JSONObject
             camposNum[p] = campo(caja, p, if (calculado) "[calculado]" else expr(v), !calculado)
         }
         for (p in textos[tipo] ?: emptyList()) {
-            camposTxt[p] = campo(caja, p, b.optString(p), false)
+            if (p == "alineacion" || p == "estilo" || p == "fuente") {
+                combosTxt[p] = comboCaja(caja, p, opcionesDe(p), b.optString(p))
+            } else {
+                camposTxt[p] = campo(caja, p, b.optString(p), false)
+            }
         }
         val selector = Spinner(this)
         val cNombre = EditText(this)
@@ -413,6 +418,10 @@ class ScriptsActivity : Activity() {
                     if (d != null) b.put(p, d)
                 }
                 for ((p, e) in camposTxt) b.put(p, e.text.toString())
+                for ((p, s) in combosTxt) {
+                    val v = s.selectedItem as String
+                    b.put(p, if (v == "(predeterminada)") "" else v)
+                }
                 if (esCondicion) {
                     val c = construirCondicion(selector.selectedItemPosition, cNombre.text.toString().trim(), cValor.text.toString().toDoubleOrNull() ?: 0.0)
                     if (c != null) b.put("condicion", c)
@@ -422,5 +431,29 @@ class ScriptsActivity : Activity() {
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun opcionesDe(p: String): List<String> {
+        if (p == "alineacion") return listOf("izquierda", "centro", "derecha")
+        if (p == "estilo") return listOf("normal", "negrita", "sombra", "contorno")
+        val l = ArrayList<String>()
+        l.add("(predeterminada)")
+        val fuentes = File(dir, "assets/fuentes").listFiles()
+        if (fuentes != null) l.addAll(fuentes.filter { it.isFile }.map { it.name }.sorted())
+        return l
+    }
+
+    private fun comboCaja(padre: LinearLayout, etiqueta: String, opciones: List<String>, actual: String): Spinner {
+        val t = TextView(this)
+        t.text = etiqueta
+        t.setTextColor(Color.LTGRAY)
+        padre.addView(t)
+        val ops = if (actual.isNotEmpty() && !opciones.contains(actual)) opciones + actual else opciones
+        val s = Spinner(this)
+        s.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, ops)
+        val i = ops.indexOf(actual)
+        s.setSelection(if (i >= 0) i else 0)
+        padre.addView(s)
+        return s
     }
 }

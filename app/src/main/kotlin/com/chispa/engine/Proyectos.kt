@@ -60,7 +60,7 @@ object Proyectos {
             "{\"formato\":1,\"tipo\":\"2D\",\"nombre\":\"" + nombre + "\"," +
             "\"idPaquete\":\"com.chispa.juego\",\"version\":\"1.0\",\"motor\":\"0.1.0\"," +
             "\"pantalla\":{\"ancho\":1280,\"alto\":720,\"orientacion\":\"horizontal\"}," +
-            "\"escenaInicial\":\"escena_1\",\"variablesGlobales\":[]}"
+            "\"escenaInicial\":\"escena_1\",\"variablesGlobales\":[],\"mostrarVariables\":false,\"mostrarDebug\":false}"
         )
         File(dir, "escenas/escena_1.json").writeText(
             "{\"id\":\"escena_1\",\"nombre\":\"Escena 1\",\"fondo\":{\"color\":\"#1B2A41\"},\"objetos\":[" +

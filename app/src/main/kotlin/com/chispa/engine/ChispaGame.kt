@@ -132,7 +132,7 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
             fuente.setColor(Color.WHITE)
             fuente.draw(
                 batch,
-                p.nombre + " - " + e.nombre + "\nObjetos: " + e.objetos.size + " (" + visibles + " visibles)",
+                if (!p.mostrarDebug) "" else p.nombre + " - " + e.nombre + "\nObjetos: " + e.objetos.size + " (" + visibles + " visibles)",
                 -medioAncho + 20f, medioAlto - 20f
             )
         }
@@ -140,7 +140,7 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
         interprete?.let { ip ->
             for (td in ip.textos()) textos.dibujar(batch, base, td)
         }
-        val tv = interprete?.textoVariables()
+        val tv = if (proyecto?.mostrarVariables == false) null else interprete?.textoVariables()
         if (!tv.isNullOrEmpty()) fuente.draw(batch, tv, medioAncho - 420f, medioAlto - 20f, 400f, Align.right, false)
         batch.end()
     }

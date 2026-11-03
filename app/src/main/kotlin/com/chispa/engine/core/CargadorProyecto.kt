@@ -20,7 +20,9 @@ object CargadorProyecto {
             alto = pantalla?.getFloat("alto", 720f) ?: 720f,
             orientacion = pantalla?.getString("orientacion", "horizontal") ?: "horizontal",
             escenaInicial = raiz.getString("escenaInicial", "escena_1"),
-            variables = LectorBloques.leerVariables(raiz.get("variablesGlobales"))
+            variables = LectorBloques.leerVariables(raiz.get("variablesGlobales")),
+            mostrarVariables = raiz.getBoolean("mostrarVariables", true),
+            mostrarDebug = raiz.getBoolean("mostrarDebug", true)
         )
     }
 

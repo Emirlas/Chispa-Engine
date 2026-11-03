@@ -12,11 +12,13 @@ import android.provider.OpenableColumns
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.Spinner
 import android.widget.TextView
 import org.json.JSONArray
 import org.json.JSONObject
@@ -32,7 +34,8 @@ class EditorActivity : Activity() {
     private lateinit var titulo: TextView
     private lateinit var lista: LinearLayout
     private var campoImagen: EditText? = null
-    private var campoFuente: EditText? = null
+    private var spinnerFuente: Spinner? = null
+    private var textoFuentes: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +66,7 @@ class EditorActivity : Activity() {
         botones.orientation = LinearLayout.HORIZONTAL
         botones.addView(boton("Escenas") { elegirEscena() })
         botones.addView(boton("+ Objeto") { nuevoObjeto() })
+        botones.addView(boton("Ajustes") { ajustes() })
         botones.addView(boton("Jugar") { jugar() })
         raiz.addView(botones)
 
@@ -272,13 +276,17 @@ class EditorActivity : Activity() {
         caja.addView(bImagen)
         val texto = campo(caja, "Texto (opcional, usa {variable})", o.optString("texto", ""), false)
         val tamT = campo(caja, "Tamano del texto", num(o.optDouble("tamTexto", 40.0)), true)
-        val alinT = campo(caja, "Alineacion (izquierda, centro, derecha)", o.optString("alinTexto", "centro"), false)
-        val estT = campo(caja, "Estilo (normal, negrita, sombra, contorno)", o.optString("estiloTexto", "normal"), false)
-        val fueT = campo(caja, "Fuente (archivo .ttf, vacio = predeterminada)", o.optString("fuenteTexto", ""), false)
-        caja.addView(boton("Elegir fuente (.ttf) del telefono") {
-            campoFuente = fueT
-            elegirFuente()
-        })
+        val alinT = combo(caja, "Alineacion", listOf("izquierda", "centro", "derecha"), o.optString("alinTexto", "centro"))
+        val estT = combo(caja, "Estilo", listOf("normal", "negrita", "sombra", "contorno"), o.optString("estiloTexto", "normal"))
+        val etFuente = TextView(this)
+        etFuente.text = "Fuente"
+        etFuente.setTextColor(Color.LTGRAY)
+        caja.addView(etFuente)
+        val fueT = Spinner(this)
+        ponerFuentes(fueT, o.optString("fuenteTexto", ""))
+        spinnerFuente = fueT
+        caja.addView(fueT)
+        caja.addView(boton("+ Agregar fuente (.ttf)") { elegirFuente() })
         val visible = CheckBox(this)
         visible.text = "Visible"
         visible.setTextColor(Color.WHITE)
@@ -304,9 +312,10 @@ class EditorActivity : Activity() {
                 val tt = texto.text.toString()
                 if (tt.isEmpty()) o.remove("texto") else o.put("texto", tt)
                 o.put("tamTexto", maxOf(4.0, leer(tamT, 40.0)))
-                o.put("alinTexto", alinT.text.toString().trim().ifEmpty { "centro" })
-                o.put("estiloTexto", estT.text.toString().trim().ifEmpty { "normal" })
-                o.put("fuenteTexto", fueT.text.toString().trim())
+                o.put("alinTexto", alinT.selectedItem as String)
+                o.put("estiloTexto", estT.selectedItem as String)
+                val fs = fueT.selectedItem as String
+                o.put("fuenteTexto", if (fs == "(predeterminada)") "" else fs)
                 o.put("visible", visible.isChecked)
                 guardarEscena()
                 refrescar()
@@ -384,9 +393,96 @@ class EditorActivity : Activity() {
             val destino = File(dir, "assets/fuentes/" + nombre)
             destino.parentFile?.mkdirs()
             contentResolver.openInputStream(uri)?.use { e -> destino.outputStream().use { s -> e.copyTo(s) } }
-            campoFuente?.setText(nombre)
+            fuenteAgregada(nombre)
         } catch (ex: Exception) {
-            campoFuente?.setText("")
+            ex.printStackTrace()
         }
+    }
+
+    private fun fuentesDisponibles(): List<String> {
+        val archivos = File(dir, "assets/fuentes").listFiles() ?: return emptyList()
+        return archivos.filter { it.isFile }.map { it.name }.sorted()
+    }
+
+    private fun textoListaFuentes(): String {
+        val l = fuentesDisponibles()
+        return if (l.isEmpty()) "(ninguna todavia)" else l.joinToString("\n")
+    }
+
+    private fun ponerFuentes(s: Spinner, seleccion: String) {
+        val items = ArrayList<String>()
+        items.add("(predeterminada)")
+        items.addAll(fuentesDisponibles())
+        s.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, items)
+        val i = items.indexOf(seleccion)
+        s.setSelection(if (i >= 0) i else 0)
+    }
+
+    private fun combo(padre: LinearLayout, etiqueta: String, opciones: List<String>, actual: String): Spinner {
+        val t = TextView(this)
+        t.text = etiqueta
+        t.setTextColor(Color.LTGRAY)
+        padre.addView(t)
+        val s = Spinner(this)
+        s.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, opciones)
+        val i = opciones.indexOf(actual)
+        s.setSelection(if (i >= 0) i else 0)
+        padre.addView(s)
+        return s
+    }
+
+    private fun fuenteAgregada(nombre: String) {
+        val s = spinnerFuente
+        if (s != null) ponerFuentes(s, nombre)
+        textoFuentes?.text = textoListaFuentes()
+    }
+
+    private fun ajustes() {
+        val caja = LinearLayout(this)
+        caja.orientation = LinearLayout.VERTICAL
+        caja.setPadding(48, 16, 48, 0)
+        val verVars = CheckBox(this)
+        verVars.text = "Mostrar variables en pantalla"
+        verVars.setTextColor(Color.WHITE)
+        verVars.isChecked = proyecto.optBoolean("mostrarVariables", true)
+        caja.addView(verVars)
+        val verDebug = CheckBox(this)
+        verDebug.text = "Mostrar informacion de depuracion"
+        verDebug.setTextColor(Color.WHITE)
+        verDebug.isChecked = proyecto.optBoolean("mostrarDebug", true)
+        caja.addView(verDebug)
+        val fondo = escena.optJSONObject("fondo")
+        val colorFondo = campo(caja, "Color de fondo de esta escena (#RRGGBB)", fondo?.optString("color", "#1B2A41") ?: "#1B2A41", false)
+        val etiqueta = TextView(this)
+        etiqueta.text = "Fuentes del proyecto:"
+        etiqueta.setTextColor(Color.LTGRAY)
+        etiqueta.setPadding(0, 24, 0, 0)
+        caja.addView(etiqueta)
+        val vistaFuentes = TextView(this)
+        vistaFuentes.setTextColor(Color.WHITE)
+        vistaFuentes.text = textoListaFuentes()
+        textoFuentes = vistaFuentes
+        caja.addView(vistaFuentes)
+        caja.addView(boton("+ Agregar fuente (.ttf)") { elegirFuente() })
+        val scroll = ScrollView(this)
+        scroll.addView(caja)
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Ajustes del proyecto")
+            .setView(scroll)
+            .setPositiveButton("Guardar") { _, _ ->
+                proyecto.put("mostrarVariables", verVars.isChecked)
+                proyecto.put("mostrarDebug", verDebug.isChecked)
+                val c = colorFondo.text.toString().trim()
+                if (Regex("^#[0-9A-Fa-f]{6}$").matches(c)) {
+                    val f = escena.optJSONObject("fondo") ?: JSONObject()
+                    f.put("color", c)
+                    escena.put("fondo", f)
+                }
+                guardarProyecto()
+                guardarEscena()
+                refrescar()
+            }
+            .setNegativeButton("Cerrar", null)
+            .show()
     }
 }

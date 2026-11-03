@@ -10,7 +10,9 @@ class Proyecto(
     val alto: Float,
     val orientacion: String,
     val escenaInicial: String,
-    val variables: Map<String, Float>
+    val variables: Map<String, Float>,
+    val mostrarVariables: Boolean,
+    val mostrarDebug: Boolean
 )
 
 class Bloque(
