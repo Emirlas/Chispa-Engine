@@ -68,6 +68,10 @@ class EditorActivity : Activity() {
         botones.addView(boton("+ Objeto") { nuevoObjeto() })
         botones.addView(boton("Ajustes") { ajustes() })
         botones.addView(boton("Jugar") { jugar() })
+        val botones2 = LinearLayout(this)
+        botones2.orientation = LinearLayout.HORIZONTAL
+        botones2.addView(boton("Vista de la escena (arrastrar objetos)") { abrirVista() })
+        raiz.addView(botones2)
         raiz.addView(botones)
 
         val scroll = ScrollView(this)
@@ -333,7 +337,7 @@ class EditorActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 2) {
+        if (requestCode == 2 || requestCode == 4) {
             cargarEscena()
             refrescar()
             return
@@ -484,5 +488,13 @@ class EditorActivity : Activity() {
             }
             .setNegativeButton("Cerrar", null)
             .show()
+    }
+
+    private fun abrirVista() {
+        guardarEscena()
+        val intento = Intent(this, VistaActivity::class.java)
+        intento.putExtra("proyecto", nombreProyecto)
+        intento.putExtra("escena", escenaId)
+        startActivityForResult(intento, 4)
     }
 }

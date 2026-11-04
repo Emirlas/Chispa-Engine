@@ -9,6 +9,7 @@
         </activity>
         <activity android:name=".EditorActivity" android:exported="false" />
         <activity android:name=".ScriptsActivity" android:exported="false" />
+        <activity android:name=".VistaActivity" android:exported="false" android:screenOrientation="landscape" />
         <activity android:name=".AndroidLauncher" android:exported="false" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:screenOrientation="landscape" android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|uiMode" />
     </application>
 </manifest>
