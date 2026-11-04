@@ -20,7 +20,7 @@ import com.chispa.engine.core.Objeto
 import com.chispa.engine.core.TextoDef
 import com.chispa.engine.core.Proyecto
 
-class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
+class ChispaGame(private val rutaBase: String, private val interno: Boolean) : ApplicationAdapter() {
 
     private lateinit var camera: OrthographicCamera
     private lateinit var viewport: FitViewport
@@ -48,7 +48,7 @@ class ChispaGame(private val rutaBase: String) : ApplicationAdapter() {
         blanca = Texture(pixmap)
         pixmap.dispose()
 
-        base = Gdx.files.local(rutaBase)
+        base = if (interno) Gdx.files.internal(rutaBase) else Gdx.files.local(rutaBase)
         recursos = Recursos(base)
         textos = Textos()
         var ancho = 1280f

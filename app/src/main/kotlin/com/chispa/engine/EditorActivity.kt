@@ -72,6 +72,9 @@ class EditorActivity : Activity() {
         botones2.orientation = LinearLayout.HORIZONTAL
         botones2.addView(boton("Vista de la escena (arrastrar objetos)") { abrirVista() })
         raiz.addView(botones2)
+        val botones3 = LinearLayout(this)
+        botones3.addView(boton("Exportar APK (juego instalable)") { exportar() })
+        raiz.addView(botones3)
         raiz.addView(botones)
 
         val scroll = ScrollView(this)
@@ -496,5 +499,42 @@ class EditorActivity : Activity() {
         intento.putExtra("proyecto", nombreProyecto)
         intento.putExtra("escena", escenaId)
         startActivityForResult(intento, 4)
+    }
+
+    private fun exportar() {
+        val campo = EditText(this)
+        campo.setText(nombreProyecto)
+        campo.setTextColor(Color.WHITE)
+        campo.hint = "Nombre del juego (hasta 32 letras)"
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Exportar APK")
+            .setMessage("Se genera un APK instalable con este juego y se guarda en Descargas. Puede tardar unos segundos.")
+            .setView(campo)
+            .setPositiveButton("Exportar") { _, _ ->
+                guardarEscena()
+                guardarProyecto()
+                val nombre = campo.text.toString().trim().ifEmpty { nombreProyecto }
+                val espera = AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+                    .setMessage("Exportando, espera unos segundos...")
+                    .setCancelable(false)
+                    .show()
+                Thread {
+                    val mensaje = try {
+                        Exportador.exportar(this, nombreProyecto, nombre)
+                    } catch (ex: Throwable) {
+                        "Error al exportar: " + ex.toString()
+                    }
+                    runOnUiThread {
+                        espera.dismiss()
+                        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+                            .setTitle("Exportacion")
+                            .setMessage(mensaje)
+                            .setPositiveButton("Aceptar", null)
+                            .show()
+                    }
+                }.start()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 }

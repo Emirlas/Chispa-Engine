@@ -12,6 +12,7 @@ class AndroidLauncher : AndroidApplication() {
         config.useAccelerometer = false
         config.useCompass = false
         val nombre = intent.getStringExtra("proyecto") ?: "Demo"
-        initialize(ChispaGame("proyectos/" + nombre), config)
+        val interno = intent.getBooleanExtra("interno", false)
+        initialize(ChispaGame(if (interno) "juego" else "proyectos/" + nombre, interno), config)
     }
 }

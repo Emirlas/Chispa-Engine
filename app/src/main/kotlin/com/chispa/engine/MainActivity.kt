@@ -20,6 +20,13 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (esJuego()) {
+            val i = Intent(this, AndroidLauncher::class.java)
+            i.putExtra("interno", true)
+            startActivity(i)
+            finish()
+            return
+        }
         Proyectos.prepararDemo(this)
 
         val raiz = LinearLayout(this)
@@ -131,5 +138,14 @@ class MainActivity : Activity() {
         val i = Intent(this, EditorActivity::class.java)
         i.putExtra("proyecto", nombre)
         startActivity(i)
+    }
+
+    private fun esJuego(): Boolean {
+        return try {
+            assets.open("juego/proyecto.json").close()
+            true
+        } catch (ex: Exception) {
+            false
+        }
     }
 }
