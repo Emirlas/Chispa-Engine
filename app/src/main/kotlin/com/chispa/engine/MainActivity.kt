@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -38,7 +39,14 @@ class MainActivity : Activity() {
         titulo.text = "Chispa Engine"
         titulo.textSize = 28f
         titulo.setTextColor(Color.parseColor("#FF8C1A"))
-        raiz.addView(titulo)
+        val cabecera = LinearLayout(this)
+        cabecera.orientation = LinearLayout.HORIZONTAL
+        cabecera.gravity = Gravity.CENTER_VERTICAL
+        val logo = ImageView(this)
+        logo.setImageResource(R.drawable.ic_launcher_foreground)
+        cabecera.addView(logo, LinearLayout.LayoutParams(200, 200))
+        cabecera.addView(titulo)
+        raiz.addView(cabecera)
 
         val nuevo = Button(this)
         nuevo.text = "+ Nuevo proyecto"
