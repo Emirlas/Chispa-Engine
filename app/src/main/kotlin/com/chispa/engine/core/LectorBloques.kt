@@ -14,12 +14,23 @@ object LectorBloques {
         return r
     }
 
+    fun leerTextos(lista: JsonValue?): List<String> {
+        val r = ArrayList<String>()
+        var t: JsonValue? = lista?.child
+        while (t != null) {
+            r.add(t.asString())
+            t = t.next
+        }
+        return r
+    }
+
     fun leerScripts(lista: JsonValue?): List<Script> {
         val r = ArrayList<Script>()
         var s: JsonValue? = lista?.child
         while (s != null) {
             val evento = s.get("evento")?.getString("tipo", "") ?: ""
-            r.add(Script(evento, leerBloques(s.get("bloques"))))
+            val param = s.get("evento")?.getString("param", "") ?: ""
+            r.add(Script(evento, param, leerBloques(s.get("bloques"))))
             s = s.next
         }
         return r

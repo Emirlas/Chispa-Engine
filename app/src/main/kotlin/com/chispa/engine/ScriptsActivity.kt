@@ -29,18 +29,19 @@ class ScriptsActivity : Activity() {
     private val claves = arrayOf("num", "var", "azar", "suma", "resta", "mult", "div", "toque_x", "toque_y", "temporizador", "mayor", "menor", "igual", "tocando_pantalla", "tocando_objeto", "y", "o", "no")
     private val etiquetasExpr = arrayOf("Numero", "Variable", "Azar entre A y B", "Suma A + B", "Resta A - B", "Multiplicacion A x B", "Division A / B", "Posicion X del toque", "Posicion Y del toque", "Temporizador (segundos)", "Condicion: A mayor que B", "Condicion: A menor que B", "Condicion: A igual a B", "Condicion: tocando la pantalla", "Condicion: tocando un objeto", "Condicion: A y B", "Condicion: A o B", "Condicion: no A")
 
-    private val tipos = arrayOf("mover", "ir_a", "rotar", "esperar", "repetir", "por_siempre", "asignar", "cambiar", "si", "esperar_hasta", "mostrar_texto", "borrar_texto", "reproducir_sonido", "ir_a_escena", "detener_script")
-    private val nombres = arrayOf("Mover pasos", "Ir a x, y", "Rotar grados", "Esperar segundos", "Repetir veces", "Por siempre", "Asignar variable", "Cambiar variable", "Si / sino", "Esperar hasta que", "Mostrar texto", "Borrar texto", "Reproducir sonido", "Ir a escena", "Detener este script")
+    private val tipos = arrayOf("mover", "ir_a", "rotar", "esperar", "repetir", "por_siempre", "asignar", "cambiar", "si", "esperar_hasta", "mostrar_texto", "borrar_texto", "reproducir_sonido", "ir_a_escena", "detener_script", "enviar_mensaje", "siguiente_disfraz", "cambiar_disfraz")
+    private val nombres = arrayOf("Mover pasos", "Ir a x, y", "Rotar grados", "Esperar segundos", "Repetir veces", "Por siempre", "Asignar variable", "Cambiar variable", "Si / sino", "Esperar hasta que", "Mostrar texto", "Borrar texto", "Reproducir sonido", "Ir a escena", "Detener este script", "Enviar mensaje", "Siguiente disfraz", "Cambiar a disfraz numero")
     private val condiciones = arrayOf("(dejar la condicion actual)", "Variable mayor que numero", "Variable menor que numero", "Variable igual a numero", "Tocando la pantalla", "Tocando objeto")
     private val numericos = mapOf(
         "mover" to listOf("pasos"), "ir_a" to listOf("x", "y"), "rotar" to listOf("grados"),
         "esperar" to listOf("segundos"), "repetir" to listOf("veces"),
         "asignar" to listOf("valor"), "cambiar" to listOf("valor"),
-        "mostrar_texto" to listOf("x", "y", "tamano")
+        "mostrar_texto" to listOf("x", "y", "tamano"),
+        "cambiar_disfraz" to listOf("numero")
     )
     private val textos = mapOf(
         "asignar" to listOf("variable"), "cambiar" to listOf("variable"),
-        "mostrar_texto" to listOf("texto", "id", "color", "alineacion", "estilo", "fuente"), "borrar_texto" to listOf("id"), "reproducir_sonido" to listOf("sonido"),
+        "mostrar_texto" to listOf("texto", "id", "color", "alineacion", "estilo", "fuente"), "borrar_texto" to listOf("id"), "enviar_mensaje" to listOf("mensaje"), "reproducir_sonido" to listOf("sonido"),
         "ir_a_escena" to listOf("escena")
     )
 
@@ -146,6 +147,9 @@ class ScriptsActivity : Activity() {
         "reproducir_sonido" -> "Sonido: " + b.optString("sonido")
         "ir_a_escena" -> "Ir a escena: " + b.optString("escena")
         "detener_script" -> "Detener este script"
+        "enviar_mensaje" -> "Enviar mensaje: " + b.optString("mensaje")
+        "siguiente_disfraz" -> "Siguiente disfraz"
+        "cambiar_disfraz" -> "Cambiar a disfraz " + expr(b.opt("numero"))
         else -> b.optString("tipo")
     }
 
@@ -176,9 +180,10 @@ class ScriptsActivity : Activity() {
             cab.gravity = Gravity.CENTER_VERTICAL
             cab.setPadding(0, 32, 0, 8)
             val t = TextView(this)
-            t.text = etiquetaEvento(s.optJSONObject("evento")?.optString("tipo") ?: "")
+            t.text = etiquetaCompleta(s.optJSONObject("evento"))
             t.textSize = 18f
             t.setTextColor(Color.parseColor("#FF8C1A"))
+            t.setOnClickListener { editarEvento(s) }
             cab.addView(t, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             cab.addView(mini("Borrar") { borrarScript(i) })
             contenido.addView(cab)
@@ -270,21 +275,6 @@ class ScriptsActivity : Activity() {
             .show()
     }
 
-    private fun elegirEvento() {
-        val ids = arrayOf("al_iniciar", "al_tocar_pantalla", "al_tocar_objeto")
-        val etiquetas = arrayOf("Al iniciar el juego", "Al tocar la pantalla", "Al tocar este objeto")
-        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
-            .setTitle("Nuevo script: cuando...")
-            .setItems(etiquetas) { _, cual ->
-                val s = JSONObject()
-                s.put("evento", JSONObject().put("tipo", ids[cual]))
-                s.put("bloques", JSONArray())
-                lista(objeto, "scripts").put(s)
-                guardar()
-                redibujar()
-            }
-            .show()
-    }
 
     private fun elegirBloque(bloques: JSONArray) {
         AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
@@ -336,6 +326,8 @@ class ScriptsActivity : Activity() {
             }
             "reproducir_sonido" -> b.put("sonido", "moneda.wav")
             "ir_a_escena" -> b.put("escena", "menu")
+            "enviar_mensaje" -> b.put("mensaje", "inicio")
+            "cambiar_disfraz" -> b.put("numero", 1)
         }
         return b
     }
@@ -566,6 +558,78 @@ class ScriptsActivity : Activity() {
                     else -> JSONObject().put("tipo", clave)
                 }
                 alAceptar(r)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun etiquetaCompleta(ev: JSONObject?): String {
+        val t = ev?.optString("tipo", "") ?: ""
+        val p = ev?.optString("param", "") ?: ""
+        return when (t) {
+            "al_iniciar" -> "Al iniciar el juego"
+            "al_tocar_pantalla" -> "Al tocar la pantalla"
+            "al_tocar_objeto" -> "Al tocar este objeto"
+            "al_recibir_mensaje" -> "Al recibir el mensaje: " + p
+            "al_colisionar" -> "Al chocar con: " + p
+            else -> t
+        }
+    }
+
+    private fun elegirEvento() {
+        val ids = arrayOf("al_iniciar", "al_tocar_pantalla", "al_tocar_objeto", "al_recibir_mensaje", "al_colisionar")
+        val etiquetas = arrayOf("Al iniciar el juego", "Al tocar la pantalla", "Al tocar este objeto", "Al recibir un mensaje...", "Al chocar con otro objeto...")
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Nuevo script: cuando...")
+            .setItems(etiquetas) { _, cual ->
+                if (cual < 3) {
+                    agregarScript(ids[cual], "")
+                } else {
+                    pedirParametro(ids[cual])
+                }
+            }
+            .show()
+    }
+
+    private fun agregarScript(tipo: String, param: String) {
+        val ev = JSONObject().put("tipo", tipo)
+        if (param.isNotEmpty()) ev.put("param", param)
+        val s = JSONObject()
+        s.put("evento", ev)
+        s.put("bloques", JSONArray())
+        lista(objeto, "scripts").put(s)
+        guardar()
+        redibujar()
+    }
+
+    private fun pedirParametro(tipo: String) {
+        val campo = EditText(this)
+        campo.setTextColor(Color.WHITE)
+        campo.hint = if (tipo == "al_colisionar") "Nombre del otro objeto" else "Nombre del mensaje"
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle(if (tipo == "al_colisionar") "Chocar con..." else "Recibir mensaje...")
+            .setView(campo)
+            .setPositiveButton("Aceptar") { _, _ ->
+                agregarScript(tipo, campo.text.toString().trim())
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun editarEvento(s: JSONObject) {
+        val ev = s.optJSONObject("evento") ?: return
+        val tipo = ev.optString("tipo", "")
+        if (tipo != "al_recibir_mensaje" && tipo != "al_colisionar") return
+        val campo = EditText(this)
+        campo.setTextColor(Color.WHITE)
+        campo.setText(ev.optString("param", ""))
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle(if (tipo == "al_colisionar") "Chocar con..." else "Recibir mensaje...")
+            .setView(campo)
+            .setPositiveButton("Aceptar") { _, _ ->
+                ev.put("param", campo.text.toString().trim())
+                guardar()
+                redibujar()
             }
             .setNegativeButton("Cancelar", null)
             .show()

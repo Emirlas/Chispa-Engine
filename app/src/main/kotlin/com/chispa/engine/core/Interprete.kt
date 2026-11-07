@@ -30,6 +30,7 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
             acumulador -= PASO
         }
         hilos.removeAll { it.terminado }
+        despachar()
     }
 
     fun apoyar(x: Float, y: Float, nuevo: Boolean) {
@@ -101,5 +102,34 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
             sb.append(k).append(": ").append(if (v % 1f == 0f) v.toInt().toString() else v.toString())
         }
         return sb.toString()
+    }
+
+    private val colisionando = HashMap<String, Boolean>()
+
+    private fun despachar() {
+        if (ctx.mensajes.isNotEmpty()) {
+            val enviados = ArrayList(ctx.mensajes)
+            ctx.mensajes.clear()
+            for (m in enviados) {
+                for (o in escena.objetos) {
+                    for (s in o.scripts) {
+                        if (s.evento == "al_recibir_mensaje" && s.param == m) lanzar(o, s)
+                    }
+                }
+            }
+        }
+        for (o in escena.objetos) {
+            for (s in o.scripts) {
+                if (s.evento != "al_colisionar") continue
+                var ahora = false
+                for (otro in escena.objetos) {
+                    if (otro !== o && o.visible && otro.visible && otro.nombre == s.param && Colision.toca(o, otro)) ahora = true
+                }
+                val clave = System.identityHashCode(s).toString()
+                val antes = colisionando[clave] ?: false
+                colisionando[clave] = ahora
+                if (ahora && !antes) lanzar(o, s)
+            }
+        }
     }
 }

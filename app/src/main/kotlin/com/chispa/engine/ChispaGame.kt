@@ -113,7 +113,7 @@ class ChispaGame(private val rutaBase: String, private val interno: Boolean) : A
                     dibujarTextoObjeto(o)
                     continue
                 }
-                val tx = recursos.textura(o.imagen)
+                val tx = recursos.textura(imagenDe(o))
                 batch.setColor(if (tx == null) o.color else Color.WHITE)
                 batch.draw(
                     tx ?: blanca,
@@ -169,5 +169,11 @@ class ChispaGame(private val rutaBase: String, private val interno: Boolean) : A
         val original = o.texto ?: ""
         val t = interprete?.reemplazar(original) ?: original
         textos.dibujar(batch, base, TextoDef(t, o.x, o.y, o.color, o.tamTexto * o.escala, o.alinTexto, o.estiloTexto, o.fuenteTexto, 0f))
+    }
+
+    private fun imagenDe(o: Objeto): String? {
+        val n = o.disfraces.size
+        if (n == 0) return o.imagen
+        return o.disfraces[((o.disfraz % n) + n) % n]
     }
 }

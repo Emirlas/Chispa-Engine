@@ -173,7 +173,7 @@ class LienzoView(
             if (!visible) pincel.alpha = 90
             c.drawText(texto, 0f, -(pincel.ascent() + pincel.descent()) / 2f, pincel)
         } else {
-            val nombre = o.optString("imagen", "")
+            val nombre = nombreImagen(o)
             val bmp = if (nombre.isEmpty()) null else bitmap(nombre)
             if (bmp != null) {
                 pincel.color = Color.WHITE
@@ -350,5 +350,11 @@ class LienzoView(
         alGuardar()
         alSeleccionar(sel)
         invalidate()
+    }
+
+    private fun nombreImagen(o: JSONObject): String {
+        val d = o.optJSONArray("disfraces")
+        if (d != null && d.length() > 0) return d.optString(0, "")
+        return o.optString("imagen", "")
     }
 }

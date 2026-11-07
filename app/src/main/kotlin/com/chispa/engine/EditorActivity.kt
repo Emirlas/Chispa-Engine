@@ -36,6 +36,7 @@ class EditorActivity : Activity() {
     private var campoImagen: EditText? = null
     private var spinnerFuente: Spinner? = null
     private var textoFuentes: TextView? = null
+    private var anexar = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -278,9 +279,16 @@ class EditorActivity : Activity() {
         val imagen = campo(caja, "Imagen (archivo)", o.optString("imagen", ""), false)
         val bImagen = boton("Elegir imagen de la galeria") {
             campoImagen = imagen
+            anexar = false
             elegirImagen()
         }
         caja.addView(bImagen)
+        val disf = campo(caja, "Disfraces (animacion): archivos separados por coma", disfracesTexto(o), false)
+        caja.addView(boton("+ Agregar disfraz desde la galeria") {
+            campoImagen = disf
+            anexar = true
+            elegirImagen()
+        })
         val texto = campo(caja, "Texto (opcional, usa {variable})", o.optString("texto", ""), false)
         val tamT = campo(caja, "Tamano del texto", num(o.optDouble("tamTexto", 40.0)), true)
         val alinT = combo(caja, "Alineacion", listOf("izquierda", "centro", "derecha"), o.optString("alinTexto", "centro"))
@@ -316,6 +324,12 @@ class EditorActivity : Activity() {
                 if (Regex("^#[0-9A-Fa-f]{6}$").matches(c)) o.put("color", c)
                 val im = imagen.text.toString().trim()
                 if (im.isEmpty()) o.remove("imagen") else o.put("imagen", im)
+                val ld = JSONArray()
+                for (d in disf.text.toString().split(",")) {
+                    val dd = d.trim()
+                    if (dd.isNotEmpty()) ld.put(dd)
+                }
+                if (ld.length() == 0) o.remove("disfraces") else o.put("disfraces", ld)
                 val tt = texto.text.toString()
                 if (tt.isEmpty()) o.remove("texto") else o.put("texto", tt)
                 o.put("tamTexto", maxOf(4.0, leer(tamT, 40.0)))
@@ -365,7 +379,10 @@ class EditorActivity : Activity() {
                 val destino = File(dir, "assets/imagenes/" + nombre)
                 destino.parentFile?.mkdirs()
                 destino.outputStream().use { s -> bmp.compress(Bitmap.CompressFormat.PNG, 100, s) }
-                campoImagen?.setText(nombre)
+                val ci = campoImagen
+                if (ci != null) {
+                    if (anexar && ci.text.isNotEmpty()) ci.setText(ci.text.toString() + ", " + nombre) else ci.setText(nombre)
+                }
             }
         } catch (ex: Exception) {
             campoImagen?.setText("")
@@ -536,5 +553,12 @@ class EditorActivity : Activity() {
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun disfracesTexto(o: JSONObject): String {
+        val d = o.optJSONArray("disfraces") ?: return ""
+        val l = ArrayList<String>()
+        for (i in 0 until d.length()) l.add(d.optString(i, ""))
+        return l.joinToString(", ")
     }
 }

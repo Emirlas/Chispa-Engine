@@ -116,6 +116,9 @@ class Hilo(
             }
             "reproducir_sonido" -> ctx.sonidos.add(b.t("sonido"))
             "ir_a_escena" -> ctx.escenaPendiente = b.t("escena")
+            "enviar_mensaje" -> ctx.mensajes.add(b.t("mensaje"))
+            "siguiente_disfraz" -> objeto.disfraz = objeto.disfraz + 1
+            "cambiar_disfraz" -> objeto.disfraz = valor(b, "numero").toInt() - 1
             "detener_script" -> pila.clear()
         }
         return false

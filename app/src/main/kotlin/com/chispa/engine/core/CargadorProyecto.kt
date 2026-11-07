@@ -56,6 +56,8 @@ object CargadorProyecto {
             id = o.getString("id", "obj"),
             nombre = o.getString("nombre", "Objeto"),
             imagen = o.getString("imagen", null),
+            disfraces = LectorBloques.leerTextos(o.get("disfraces")),
+            disfraz = 0,
             texto = o.getString("texto", null),
             tamTexto = o.getFloat("tamTexto", 40f),
             alinTexto = o.getString("alinTexto", "centro"),

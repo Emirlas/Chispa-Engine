@@ -27,13 +27,15 @@ class Bloque(
     fun t(nombre: String): String = txt[nombre] ?: ""
 }
 
-class Script(val evento: String, val bloques: List<Bloque>)
+class Script(val evento: String, val param: String, val bloques: List<Bloque>)
 
 class Objeto(
     val id: String,
     val nombre: String,
     val color: Color,
     val imagen: String?,
+    val disfraces: List<String>,
+    var disfraz: Int,
     val texto: String?,
     val tamTexto: Float,
     val alinTexto: String,
