@@ -3,11 +3,12 @@ package com.chispa.engine.core
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.MathUtils
 import kotlin.math.abs
+import kotlin.math.hypot
 
 class Marco(val bloques: List<Bloque>, var indice: Int, var repeticiones: Int)
 
 class Hilo(
-    private val objeto: Objeto,
+    val objeto: Objeto,
     val origen: List<Bloque>,
     private val ctx: Contexto
 ) {
@@ -119,6 +120,54 @@ class Hilo(
             "enviar_mensaje" -> ctx.mensajes.add(b.t("mensaje"))
             "siguiente_disfraz" -> objeto.disfraz = objeto.disfraz + 1
             "cambiar_disfraz" -> objeto.disfraz = valor(b, "numero").toInt() - 1
+            "rebotar_borde" -> {
+                val mx = 640f - objeto.anchoBase * objeto.escala / 2f
+                val my = 360f - objeto.altoBase * objeto.escala / 2f
+                if (objeto.x > mx) {
+                    objeto.x = mx
+                    objeto.rotacion = 180f - objeto.rotacion
+                }
+                if (objeto.x < -mx) {
+                    objeto.x = -mx
+                    objeto.rotacion = 180f - objeto.rotacion
+                }
+                if (objeto.y > my) {
+                    objeto.y = my
+                    objeto.rotacion = -objeto.rotacion
+                }
+                if (objeto.y < -my) {
+                    objeto.y = -my
+                    objeto.rotacion = -objeto.rotacion
+                }
+            }
+            "mover_hacia" -> {
+                val tx = valor(b, "x")
+                val ty = valor(b, "y")
+                val paso = valor(b, "pasos")
+                val dx = tx - objeto.x
+                val dy = ty - objeto.y
+                val d = hypot(dx, dy)
+                if (d <= paso || d == 0f) {
+                    objeto.x = tx
+                    objeto.y = ty
+                } else {
+                    objeto.x += dx / d * paso
+                    objeto.y += dy / d * paso
+                }
+            }
+            "crear_clon" -> {
+                val nombre = b.t("objeto")
+                val fuente = if (nombre.isEmpty()) objeto else ctx.objetos.firstOrNull { it.nombre == nombre && !it.esClon }
+                if (fuente != null) ctx.clones.add(fuente)
+            }
+            "borrar_clon" -> {
+                if (objeto.esClon) {
+                    objeto.eliminado = true
+                    pila.clear()
+                }
+            }
+            "mostrar" -> objeto.visible = true
+            "ocultar" -> objeto.visible = false
             "detener_script" -> pila.clear()
         }
         return false

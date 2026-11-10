@@ -29,19 +29,20 @@ class ScriptsActivity : Activity() {
     private val claves = arrayOf("num", "var", "azar", "suma", "resta", "mult", "div", "toque_x", "toque_y", "temporizador", "mayor", "menor", "igual", "tocando_pantalla", "tocando_objeto", "y", "o", "no")
     private val etiquetasExpr = arrayOf("Numero", "Variable", "Azar entre A y B", "Suma A + B", "Resta A - B", "Multiplicacion A x B", "Division A / B", "Posicion X del toque", "Posicion Y del toque", "Temporizador (segundos)", "Condicion: A mayor que B", "Condicion: A menor que B", "Condicion: A igual a B", "Condicion: tocando la pantalla", "Condicion: tocando un objeto", "Condicion: A y B", "Condicion: A o B", "Condicion: no A")
 
-    private val tipos = arrayOf("mover", "ir_a", "rotar", "esperar", "repetir", "por_siempre", "asignar", "cambiar", "si", "esperar_hasta", "mostrar_texto", "borrar_texto", "reproducir_sonido", "ir_a_escena", "detener_script", "enviar_mensaje", "siguiente_disfraz", "cambiar_disfraz")
-    private val nombres = arrayOf("Mover pasos", "Ir a x, y", "Rotar grados", "Esperar segundos", "Repetir veces", "Por siempre", "Asignar variable", "Cambiar variable", "Si / sino", "Esperar hasta que", "Mostrar texto", "Borrar texto", "Reproducir sonido", "Ir a escena", "Detener este script", "Enviar mensaje", "Siguiente disfraz", "Cambiar a disfraz numero")
+    private val tipos = arrayOf("mover", "ir_a", "rotar", "esperar", "repetir", "por_siempre", "asignar", "cambiar", "si", "esperar_hasta", "mostrar_texto", "borrar_texto", "reproducir_sonido", "ir_a_escena", "detener_script", "enviar_mensaje", "siguiente_disfraz", "cambiar_disfraz", "crear_clon", "borrar_clon", "rebotar_borde", "mover_hacia", "mostrar", "ocultar")
+    private val nombres = arrayOf("Mover pasos", "Ir a x, y", "Rotar grados", "Esperar segundos", "Repetir veces", "Por siempre", "Asignar variable", "Cambiar variable", "Si / sino", "Esperar hasta que", "Mostrar texto", "Borrar texto", "Reproducir sonido", "Ir a escena", "Detener este script", "Enviar mensaje", "Siguiente disfraz", "Cambiar a disfraz numero", "Crear clon", "Borrar este clon", "Rebotar en el borde", "Mover hacia x, y", "Mostrar objeto", "Ocultar objeto")
     private val condiciones = arrayOf("(dejar la condicion actual)", "Variable mayor que numero", "Variable menor que numero", "Variable igual a numero", "Tocando la pantalla", "Tocando objeto")
     private val numericos = mapOf(
         "mover" to listOf("pasos"), "ir_a" to listOf("x", "y"), "rotar" to listOf("grados"),
         "esperar" to listOf("segundos"), "repetir" to listOf("veces"),
         "asignar" to listOf("valor"), "cambiar" to listOf("valor"),
         "mostrar_texto" to listOf("x", "y", "tamano"),
-        "cambiar_disfraz" to listOf("numero")
+        "cambiar_disfraz" to listOf("numero"),
+        "mover_hacia" to listOf("x", "y", "pasos")
     )
     private val textos = mapOf(
         "asignar" to listOf("variable"), "cambiar" to listOf("variable"),
-        "mostrar_texto" to listOf("texto", "id", "color", "alineacion", "estilo", "fuente"), "borrar_texto" to listOf("id"), "enviar_mensaje" to listOf("mensaje"), "reproducir_sonido" to listOf("sonido"),
+        "mostrar_texto" to listOf("texto", "id", "color", "alineacion", "estilo", "fuente"), "borrar_texto" to listOf("id"), "enviar_mensaje" to listOf("mensaje"), "crear_clon" to listOf("objeto"), "reproducir_sonido" to listOf("sonido"),
         "ir_a_escena" to listOf("escena")
     )
 
@@ -150,6 +151,12 @@ class ScriptsActivity : Activity() {
         "enviar_mensaje" -> "Enviar mensaje: " + b.optString("mensaje")
         "siguiente_disfraz" -> "Siguiente disfraz"
         "cambiar_disfraz" -> "Cambiar a disfraz " + expr(b.opt("numero"))
+        "crear_clon" -> "Crear clon de: " + (if (b.optString("objeto").isEmpty()) "este objeto" else b.optString("objeto"))
+        "borrar_clon" -> "Borrar este clon"
+        "rebotar_borde" -> "Rebotar en el borde"
+        "mostrar" -> "Mostrar objeto"
+        "ocultar" -> "Ocultar objeto"
+        "mover_hacia" -> "Mover hacia x: " + expr(b.opt("x")) + " y: " + expr(b.opt("y")) + " (" + expr(b.opt("pasos")) + " pasos)"
         else -> b.optString("tipo")
     }
 
@@ -328,6 +335,11 @@ class ScriptsActivity : Activity() {
             "ir_a_escena" -> b.put("escena", "menu")
             "enviar_mensaje" -> b.put("mensaje", "inicio")
             "cambiar_disfraz" -> b.put("numero", 1)
+            "mover_hacia" -> {
+                b.put("x", 0)
+                b.put("y", 0)
+                b.put("pasos", 5)
+            }
         }
         return b
     }
@@ -352,6 +364,7 @@ class ScriptsActivity : Activity() {
     private fun opcionesDe(p: String): List<String> {
         if (p == "alineacion") return listOf("izquierda", "centro", "derecha")
         if (p == "estilo") return listOf("normal", "negrita", "sombra", "contorno")
+        if (p == "sonido") return listarSonidos()
         val l = ArrayList<String>()
         l.add("(predeterminada)")
         val fuentes = File(dir, "assets/fuentes").listFiles()
@@ -402,7 +415,7 @@ class ScriptsActivity : Activity() {
         val camposTxt = LinkedHashMap<String, EditText>()
         val combosTxt = LinkedHashMap<String, Spinner>()
         for (p in textos[tipo] ?: emptyList()) {
-            if (p == "alineacion" || p == "estilo" || p == "fuente") {
+            if (p == "alineacion" || p == "estilo" || p == "fuente" || p == "sonido") {
                 combosTxt[p] = comboCaja(caja, p, opcionesDe(p), b.optString(p))
             } else {
                 camposTxt[p] = campo(caja, p, b.optString(p), false)
@@ -420,7 +433,7 @@ class ScriptsActivity : Activity() {
                 for ((p, e) in camposTxt) b.put(p, e.text.toString())
                 for ((p, s) in combosTxt) {
                     val v = s.selectedItem as String
-                    b.put(p, if (v == "(predeterminada)") "" else v)
+                    b.put(p, if (v == "(predeterminada)" || v == "(sin sonidos)") "" else v)
                 }
                 guardar()
                 redibujar()
@@ -572,17 +585,18 @@ class ScriptsActivity : Activity() {
             "al_tocar_objeto" -> "Al tocar este objeto"
             "al_recibir_mensaje" -> "Al recibir el mensaje: " + p
             "al_colisionar" -> "Al chocar con: " + p
+            "al_empezar_clon" -> "Al empezar como clon"
             else -> t
         }
     }
 
     private fun elegirEvento() {
-        val ids = arrayOf("al_iniciar", "al_tocar_pantalla", "al_tocar_objeto", "al_recibir_mensaje", "al_colisionar")
-        val etiquetas = arrayOf("Al iniciar el juego", "Al tocar la pantalla", "Al tocar este objeto", "Al recibir un mensaje...", "Al chocar con otro objeto...")
+        val ids = arrayOf("al_iniciar", "al_tocar_pantalla", "al_tocar_objeto", "al_recibir_mensaje", "al_colisionar", "al_empezar_clon")
+        val etiquetas = arrayOf("Al iniciar el juego", "Al tocar la pantalla", "Al tocar este objeto", "Al recibir un mensaje...", "Al chocar con otro objeto...", "Al empezar como clon")
         AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
             .setTitle("Nuevo script: cuando...")
             .setItems(etiquetas) { _, cual ->
-                if (cual < 3) {
+                if (cual < 3 || cual > 4) {
                     agregarScript(ids[cual], "")
                 } else {
                     pedirParametro(ids[cual])
@@ -633,5 +647,10 @@ class ScriptsActivity : Activity() {
             }
             .setNegativeButton("Cancelar", null)
             .show()
+    }
+
+    private fun listarSonidos(): List<String> {
+        val l = File(dir, "assets/sonidos").listFiles()?.filter { it.isFile }?.map { it.name }?.sorted() ?: emptyList()
+        return if (l.isEmpty()) listOf("(sin sonidos)") else l
     }
 }

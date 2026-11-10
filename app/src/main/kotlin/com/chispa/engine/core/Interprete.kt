@@ -82,7 +82,7 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
     }
 
     private fun lanzar(o: Objeto, s: Script) {
-        hilos.removeAll { it.origen === s.bloques }
+        hilos.removeAll { it.origen === s.bloques && it.objeto === o }
         hilos.add(Hilo(o, s.bloques, ctx))
     }
 
@@ -107,6 +107,23 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
     private val colisionando = HashMap<String, Boolean>()
 
     private fun despachar() {
+        if (escena.objetos.any { it.eliminado }) {
+            escena.objetos.removeAll { it.eliminado }
+            hilos.removeAll { it.objeto.eliminado }
+        }
+        if (ctx.clones.isNotEmpty()) {
+            val fuentes = ArrayList(ctx.clones)
+            ctx.clones.clear()
+            for (f in fuentes) {
+                if (escena.objetos.size >= 400) break
+                val c = f.clonar()
+                escena.objetos.add(c)
+                for (s in c.scripts) {
+                    if (s.evento == "al_empezar_clon") hilos.add(Hilo(c, s.bloques, ctx))
+                }
+            }
+            escena.objetos.sortBy { it.capa }
+        }
         if (ctx.mensajes.isNotEmpty()) {
             val enviados = ArrayList(ctx.mensajes)
             ctx.mensajes.clear()
@@ -125,7 +142,7 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
                 for (otro in escena.objetos) {
                     if (otro !== o && o.visible && otro.visible && otro.nombre == s.param && Colision.toca(o, otro)) ahora = true
                 }
-                val clave = System.identityHashCode(s).toString()
+                val clave = System.identityHashCode(s).toString() + "|" + System.identityHashCode(o)
                 val antes = colisionando[clave] ?: false
                 colisionando[clave] = ahora
                 if (ahora && !antes) lanzar(o, s)

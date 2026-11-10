@@ -37,6 +37,7 @@ class EditorActivity : Activity() {
     private var spinnerFuente: Spinner? = null
     private var textoFuentes: TextView? = null
     private var anexar = false
+    private var textoSonidos: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -359,6 +360,10 @@ class EditorActivity : Activity() {
             refrescar()
             return
         }
+        if (requestCode == 5) {
+            copiarSonido(data?.data)
+            return
+        }
         if (requestCode == 3) {
             copiarFuente(data?.data)
             return
@@ -477,6 +482,17 @@ class EditorActivity : Activity() {
         caja.addView(verDebug)
         val fondo = escena.optJSONObject("fondo")
         val colorFondo = campo(caja, "Color de fondo de esta escena (#RRGGBB)", fondo?.optString("color", "#1B2A41") ?: "#1B2A41", false)
+        val etSon = TextView(this)
+        etSon.text = "Sonidos del proyecto:"
+        etSon.setTextColor(Color.LTGRAY)
+        etSon.setPadding(0, 24, 0, 0)
+        caja.addView(etSon)
+        val vistaSon = TextView(this)
+        vistaSon.setTextColor(Color.WHITE)
+        vistaSon.text = textoListaSonidos()
+        textoSonidos = vistaSon
+        caja.addView(vistaSon)
+        caja.addView(boton("+ Agregar sonido (.wav, .ogg, .mp3)") { elegirSonido() })
         val etiqueta = TextView(this)
         etiqueta.text = "Fuentes del proyecto:"
         etiqueta.setTextColor(Color.LTGRAY)
@@ -560,5 +576,35 @@ class EditorActivity : Activity() {
         val l = ArrayList<String>()
         for (i in 0 until d.length()) l.add(d.optString(i, ""))
         return l.joinToString(", ")
+    }
+
+    private fun textoListaSonidos(): String {
+        val l = File(dir, "assets/sonidos").listFiles()?.filter { it.isFile }?.map { it.name }?.sorted() ?: emptyList()
+        return if (l.isEmpty()) "(ninguno todavia)" else l.joinToString("\n")
+    }
+
+    private fun elegirSonido() {
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.type = "audio/*"
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(i, 5)
+    }
+
+    private fun copiarSonido(uri: Uri?) {
+        if (uri == null) return
+        try {
+            var nombre = "sonido_" + System.currentTimeMillis() + ".wav"
+            contentResolver.query(uri, null, null, null, null)?.use { c ->
+                val col = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (col >= 0 && c.moveToFirst()) nombre = c.getString(col)
+            }
+            nombre = nombre.replace(Regex("[^A-Za-z0-9._-]"), "_")
+            val destino = File(dir, "assets/sonidos/" + nombre)
+            destino.parentFile?.mkdirs()
+            contentResolver.openInputStream(uri)?.use { e -> destino.outputStream().use { s -> e.copyTo(s) } }
+            textoSonidos?.text = textoListaSonidos()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
     }
 }

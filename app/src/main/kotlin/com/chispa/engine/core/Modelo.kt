@@ -47,14 +47,16 @@ class Objeto(
     var y: Float,
     val escala: Float,
     var rotacion: Float,
-    val visible: Boolean,
+    var visible: Boolean,
     val capa: Int,
-    val scripts: List<Script>
+    val scripts: List<Script>,
+    var esClon: Boolean = false,
+    var eliminado: Boolean = false
 )
 
 class Escena(
     val id: String,
     val nombre: String,
     val fondo: Color,
-    val objetos: List<Objeto>
+    val objetos: MutableList<Objeto>
 )

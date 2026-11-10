@@ -8,6 +8,7 @@ class Contexto(val objetos: List<Objeto>) {
     var escenaPendiente: String? = null
     val sonidos = ArrayList<String>()
     val mensajes = ArrayList<String>()
+    val clones = ArrayList<Objeto>()
     var tiempo = 0f
     var tocando = false
     var toqueX = 0f
