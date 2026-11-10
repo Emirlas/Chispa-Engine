@@ -9,7 +9,7 @@
         </activity>
         <activity android:name="com.chispa.engine.EditorActivity" android:exported="false" />
         <activity android:name="com.chispa.engine.ScriptsActivity" android:exported="false" />
-        <activity android:name="com.chispa.engine.VistaActivity" android:exported="false" android:screenOrientation="landscape" />
-        <activity android:name="com.chispa.engine.AndroidLauncher" android:exported="false" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:screenOrientation="landscape" android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|uiMode" />
+        <activity android:name="com.chispa.engine.VistaActivity" android:exported="false" />
+        <activity android:name="com.chispa.engine.AndroidLauncher" android:exported="false" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout|uiMode" />
     </application>
 </manifest>

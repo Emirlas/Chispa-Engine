@@ -59,6 +59,7 @@ class ChispaGame(private val rutaBase: String, private val interno: Boolean) : A
             proyecto = p
             escena = e
             interprete = Interprete(e, p.variables)
+            interprete?.definirPantalla(p.ancho, p.alto)
             ancho = p.ancho
             alto = p.alto
         } catch (ex: Exception) {
@@ -159,6 +160,7 @@ class ChispaGame(private val rutaBase: String, private val interno: Boolean) : A
             val nueva = CargadorProyecto.cargarEscena(base.child("escenas/" + nombre + ".json"))
             escena = nueva
             interprete = Interprete(nueva, ip.variablesActuales())
+            interprete?.definirPantalla(proyecto?.ancho ?: 1280f, proyecto?.alto ?: 720f)
         } catch (ex: Exception) {
             error = "No se pudo abrir la escena " + nombre + ": " + ex.toString()
             interprete = null

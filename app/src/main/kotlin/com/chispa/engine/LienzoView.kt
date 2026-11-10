@@ -34,6 +34,8 @@ class LienzoView(
             field = valor
             invalidate()
         }
+    var mx = 640f
+    var my = 360f
     private var s = 1f
     private var cx = 0f
     private var cy = 0f
@@ -114,7 +116,7 @@ class LienzoView(
 
     override fun onDraw(c: Canvas) {
         c.drawColor(Color.parseColor("#0F1722"))
-        s = minOf(width / 1400f, height / 800f)
+        s = minOf(width / (mx * 2.2f), height / (my * 2.2f))
         cx = width / 2f
         cy = height / 2f
         val fondo = escena.optJSONObject("fondo")
@@ -124,13 +126,13 @@ class LienzoView(
         } catch (ex: Exception) {
             Color.DKGRAY
         }
-        c.drawRect(cx - 640 * s, cy - 360 * s, cx + 640 * s, cy + 360 * s, pincel)
+        c.drawRect(cx - mx * s, cy - my * s, cx + mx * s, cy + my * s, pincel)
         if (cuadricula) dibujarCuadricula(c)
         pincel.style = Paint.Style.STROKE
         pincel.strokeWidth = 2f
         pincel.color = Color.argb(90, 255, 255, 255)
-        c.drawLine(cx - 640 * s, cy, cx + 640 * s, cy, pincel)
-        c.drawLine(cx, cy - 360 * s, cx, cy + 360 * s, pincel)
+        c.drawLine(cx - mx * s, cy, cx + mx * s, cy, pincel)
+        c.drawLine(cx, cy - my * s, cx, cy + my * s, pincel)
         for (o in ordenados()) dibujar(c, o)
         val sel = seleccionado
         if (sel != null) dibujarSeleccion(c, sel)
@@ -140,14 +142,14 @@ class LienzoView(
         pincel.style = Paint.Style.STROKE
         pincel.strokeWidth = 1f
         pincel.color = Color.argb(50, 255, 255, 255)
-        var gx = -640
-        while (gx <= 640) {
-            c.drawLine(cx + gx * s, cy - 360 * s, cx + gx * s, cy + 360 * s, pincel)
+        var gx = -mx.toInt()
+        while (gx <= mx.toInt()) {
+            c.drawLine(cx + gx * s, cy - my * s, cx + gx * s, cy + my * s, pincel)
             gx += 80
         }
-        var gy = -360
-        while (gy <= 360) {
-            c.drawLine(cx - 640 * s, cy + gy * s, cx + 640 * s, cy + gy * s, pincel)
+        var gy = -my.toInt()
+        while (gy <= my.toInt()) {
+            c.drawLine(cx - mx * s, cy + gy * s, cx + mx * s, cy + gy * s, pincel)
             gy += 80
         }
     }

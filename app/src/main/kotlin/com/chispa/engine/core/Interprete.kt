@@ -149,4 +149,9 @@ class Interprete(private val escena: Escena, inicial: Map<String, Float>) {
             }
         }
     }
+
+    fun definirPantalla(a: Float, h: Float) {
+        ctx.ancho = a
+        ctx.alto = h
+    }
 }

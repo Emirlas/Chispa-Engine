@@ -4,6 +4,9 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.RectF
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
@@ -38,6 +41,7 @@ class EditorActivity : Activity() {
     private var textoFuentes: TextView? = null
     private var anexar = false
     private var textoSonidos: TextView? = null
+    private var textoIcono: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -360,6 +364,10 @@ class EditorActivity : Activity() {
             refrescar()
             return
         }
+        if (requestCode == 6) {
+            procesarIcono(data?.data)
+            return
+        }
         if (requestCode == 5) {
             copiarSonido(data?.data)
             return
@@ -480,6 +488,7 @@ class EditorActivity : Activity() {
         verDebug.setTextColor(Color.WHITE)
         verDebug.isChecked = proyecto.optBoolean("mostrarDebug", true)
         caja.addView(verDebug)
+        val orient = combo(caja, "Orientacion del juego", listOf("horizontal", "vertical"), proyecto.optJSONObject("pantalla")?.optString("orientacion", "horizontal") ?: "horizontal")
         val fondo = escena.optJSONObject("fondo")
         val colorFondo = campo(caja, "Color de fondo de esta escena (#RRGGBB)", fondo?.optString("color", "#1B2A41") ?: "#1B2A41", false)
         val etSon = TextView(this)
@@ -493,6 +502,13 @@ class EditorActivity : Activity() {
         textoSonidos = vistaSon
         caja.addView(vistaSon)
         caja.addView(boton("+ Agregar sonido (.wav, .ogg, .mp3)") { elegirSonido() })
+        val vistaIcono = TextView(this)
+        vistaIcono.setTextColor(Color.WHITE)
+        vistaIcono.setPadding(0, 24, 0, 0)
+        vistaIcono.text = if (File(dir, "icono.png").exists()) "Icono del juego: personalizado" else "Icono del juego: el de Chispa Engine"
+        textoIcono = vistaIcono
+        caja.addView(vistaIcono)
+        caja.addView(boton("Elegir icono del juego (imagen)") { elegirIcono() })
         val etiqueta = TextView(this)
         etiqueta.text = "Fuentes del proyecto:"
         etiqueta.setTextColor(Color.LTGRAY)
@@ -512,6 +528,12 @@ class EditorActivity : Activity() {
             .setPositiveButton("Guardar") { _, _ ->
                 proyecto.put("mostrarVariables", verVars.isChecked)
                 proyecto.put("mostrarDebug", verDebug.isChecked)
+                val orientElegida = orient.selectedItem as String
+                val pant = proyecto.optJSONObject("pantalla") ?: JSONObject()
+                pant.put("orientacion", orientElegida)
+                pant.put("ancho", if (orientElegida == "vertical") 720 else 1280)
+                pant.put("alto", if (orientElegida == "vertical") 1280 else 720)
+                proyecto.put("pantalla", pant)
                 val c = colorFondo.text.toString().trim()
                 if (Regex("^#[0-9A-Fa-f]{6}$").matches(c)) {
                     val f = escena.optJSONObject("fondo") ?: JSONObject()
@@ -531,6 +553,9 @@ class EditorActivity : Activity() {
         val intento = Intent(this, VistaActivity::class.java)
         intento.putExtra("proyecto", nombreProyecto)
         intento.putExtra("escena", escenaId)
+        val pant = proyecto.optJSONObject("pantalla")
+        intento.putExtra("ancho", (pant?.optDouble("ancho", 1280.0) ?: 1280.0).toFloat())
+        intento.putExtra("alto", (pant?.optDouble("alto", 720.0) ?: 720.0).toFloat())
         startActivityForResult(intento, 4)
     }
 
@@ -603,6 +628,37 @@ class EditorActivity : Activity() {
             destino.parentFile?.mkdirs()
             contentResolver.openInputStream(uri)?.use { e -> destino.outputStream().use { s -> e.copyTo(s) } }
             textoSonidos?.text = textoListaSonidos()
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+        }
+    }
+
+    private fun elegirIcono() {
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.type = "image/*"
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(i, 6)
+    }
+
+    private fun procesarIcono(uri: Uri?) {
+        if (uri == null) return
+        try {
+            val medida = BitmapFactory.Options()
+            medida.inJustDecodeBounds = true
+            contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, medida) }
+            var muestra = 1
+            while (medida.outWidth / muestra > 1024 || medida.outHeight / muestra > 1024) muestra *= 2
+            val real = BitmapFactory.Options()
+            real.inSampleSize = muestra
+            val bmp = contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, real) } ?: return
+            val salida = Bitmap.createBitmap(432, 432, Bitmap.Config.ARGB_8888)
+            val c = Canvas(salida)
+            val esc = 260f / maxOf(bmp.width, bmp.height)
+            val w = bmp.width * esc
+            val h = bmp.height * esc
+            c.drawBitmap(bmp, null, RectF((432 - w) / 2f, (432 - h) / 2f, (432 + w) / 2f, (432 + h) / 2f), Paint(Paint.FILTER_BITMAP_FLAG))
+            File(dir, "icono.png").outputStream().use { salida.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            textoIcono?.text = "Icono del juego: personalizado"
         } catch (ex: Exception) {
             ex.printStackTrace()
         }

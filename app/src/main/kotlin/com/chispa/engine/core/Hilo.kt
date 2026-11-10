@@ -121,8 +121,8 @@ class Hilo(
             "siguiente_disfraz" -> objeto.disfraz = objeto.disfraz + 1
             "cambiar_disfraz" -> objeto.disfraz = valor(b, "numero").toInt() - 1
             "rebotar_borde" -> {
-                val mx = 640f - objeto.anchoBase * objeto.escala / 2f
-                val my = 360f - objeto.altoBase * objeto.escala / 2f
+                val mx = ctx.ancho / 2f - objeto.anchoBase * objeto.escala / 2f
+                val my = ctx.alto / 2f - objeto.altoBase * objeto.escala / 2f
                 if (objeto.x > mx) {
                     objeto.x = mx
                     objeto.rotacion = 180f - objeto.rotacion

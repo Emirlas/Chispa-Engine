@@ -1,6 +1,7 @@
 package com.chispa.engine
 
 import android.app.Activity
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.Button
@@ -22,6 +23,9 @@ class VistaActivity : Activity() {
         dir = File(filesDir, "proyectos/" + proyecto)
         escena = JSONObject(File(dir, "escenas/" + escenaId + ".json").readText())
         setResult(RESULT_OK)
+        val ancho = intent.getFloatExtra("ancho", 1280f)
+        val alto = intent.getFloatExtra("alto", 720f)
+        requestedOrientation = if (alto > ancho) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT else ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         val raiz = LinearLayout(this)
         raiz.orientation = LinearLayout.VERTICAL
@@ -34,6 +38,8 @@ class VistaActivity : Activity() {
         raiz.addView(info)
 
         val lienzo = LienzoView(this, dir, escena, { guardar() }, { o -> info.text = descripcion(o) })
+        lienzo.mx = ancho / 2f
+        lienzo.my = alto / 2f
         raiz.addView(lienzo, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
 
         val fila = LinearLayout(this)
@@ -52,6 +58,7 @@ class VistaActivity : Activity() {
         val b = Button(this)
         b.text = texto
         b.setAllCaps(false)
+        b.textSize = 12f
         b.setOnClickListener { accion() }
         b.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         return b

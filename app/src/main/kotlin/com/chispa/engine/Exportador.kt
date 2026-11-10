@@ -139,6 +139,7 @@ object Exportador {
             if (e.isDirectory || esFirma(n)) continue
             var datos = origen.getInputStream(e).use { it.readBytes() }
             if (n == "AndroidManifest.xml") datos = Axml.parchear(datos, cambios)
+            if (n.startsWith("res/") && n.endsWith("ic_launcher_foreground.png") && File(proyecto, "icono.png").exists()) datos = File(proyecto, "icono.png").readBytes()
             val almacenado = e.method == ZipEntry.STORED
             val alin = if (!almacenado) 0 else if (n.endsWith(".so")) 16384 else 4
             esc.agregar(n, datos, almacenado, alin)
