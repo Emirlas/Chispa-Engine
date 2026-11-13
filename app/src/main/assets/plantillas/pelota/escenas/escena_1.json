@@ -1,0 +1,10 @@
+{"id":"escena_1","nombre":"Pelota","fondo":{"color":"#102A43"},"objetos":[
+{"id":"obj_001","nombre":"Marcador","color":"#FFFFFF","texto":"Puntos: {puntos}","tamTexto":80,"alinTexto":"izquierda","estiloTexto":"sombra","tamano":{"ancho":100,"alto":100},"x":-600,"y":310,"escala":1.0,"rotacion":0,"visible":true,"capa":3,"scripts":[]},
+{"id":"obj_002","nombre":"Pelota","color":"#FF8C1A","tamano":{"ancho":110,"alto":110},"x":0,"y":0,"escala":1.0,"rotacion":37,"visible":true,"capa":2,"scripts":[
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"mover","pasos":9},{"tipo":"rebotar_borde"}]}]},
+{"evento":{"tipo":"al_tocar_objeto"},"bloques":[{"tipo":"cambiar","variable":"puntos","valor":1},{"tipo":"rotar","grados":25}]}
+]},
+{"id":"obj_003","nombre":"Estrella","color":"#FFD93D","tamano":{"ancho":70,"alto":70},"x":-300,"y":150,"escala":1.0,"rotacion":120,"visible":true,"capa":1,"scripts":[
+{"evento":{"tipo":"al_iniciar"},"bloques":[{"tipo":"por_siempre","cuerpo":[{"tipo":"mover","pasos":5},{"tipo":"rebotar_borde"},{"tipo":"rotar","grados":3}]}]}
+]}
+]}

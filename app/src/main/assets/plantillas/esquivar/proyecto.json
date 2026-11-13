@@ -1,0 +1,1 @@
+{"formato":1,"tipo":"2D","nombre":"Esquivar","idPaquete":"com.chispa.juego","version":"1.0","motor":"0.1.0","pantalla":{"ancho":720,"alto":1280,"orientacion":"vertical"},"escenaInicial":"escena_1","variablesGlobales":[{"nombre":"puntos","valor":0}],"mostrarVariables":false,"mostrarDebug":false}

@@ -1,0 +1,1 @@
+{"formato":1,"tipo":"2D","nombre":"Pelota","idPaquete":"com.chispa.juego","version":"1.0","motor":"0.1.0","pantalla":{"ancho":1280,"alto":720,"orientacion":"horizontal"},"escenaInicial":"escena_1","variablesGlobales":[{"nombre":"puntos","valor":0}],"mostrarVariables":false,"mostrarDebug":false}

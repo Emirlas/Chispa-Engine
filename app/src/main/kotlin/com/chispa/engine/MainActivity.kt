@@ -8,11 +8,14 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import android.widget.Spinner
+import android.widget.Toast
 import android.widget.TextView
 
 class MainActivity : Activity() {
@@ -52,6 +55,10 @@ class MainActivity : Activity() {
         nuevo.text = "+ Nuevo proyecto"
         nuevo.setOnClickListener { pedirNombre() }
         raiz.addView(nuevo)
+        val importar = Button(this)
+        importar.text = "Importar proyecto (.chispa)"
+        importar.setOnClickListener { elegirArchivo() }
+        raiz.addView(importar)
 
         val scroll = ScrollView(this)
         lista = LinearLayout(this)
@@ -80,49 +87,7 @@ class MainActivity : Activity() {
         for (nombre in nombres) lista.addView(fila(nombre))
     }
 
-    private fun fila(nombre: String): View {
-        val f = LinearLayout(this)
-        f.orientation = LinearLayout.HORIZONTAL
-        f.gravity = Gravity.CENTER_VERTICAL
-        f.setPadding(0, 16, 0, 16)
 
-        val t = TextView(this)
-        t.text = nombre
-        t.textSize = 20f
-        t.setTextColor(Color.WHITE)
-        f.addView(t, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
-
-        val bJugar = Button(this)
-        bJugar.text = "Jugar"
-        bJugar.setOnClickListener { abrir(nombre) }
-        val bEditar = Button(this)
-        bEditar.text = "Editar"
-        bEditar.setOnClickListener { editar(nombre) }
-        f.addView(bEditar)
-        f.addView(bJugar)
-
-        val bBorrar = Button(this)
-        bBorrar.text = "Borrar"
-        bBorrar.setOnClickListener { confirmarBorrado(nombre) }
-        f.addView(bBorrar)
-        return f
-    }
-
-    private fun pedirNombre() {
-        val campo = EditText(this)
-        campo.inputType = InputType.TYPE_CLASS_TEXT
-        campo.hint = "Nombre del proyecto"
-        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
-            .setTitle("Nuevo proyecto")
-            .setView(campo)
-            .setPositiveButton("Crear") { _, _ ->
-                val nombre = Proyectos.crear(this, campo.text.toString())
-                refrescar()
-                abrir(nombre)
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
 
     private fun confirmarBorrado(nombre: String) {
         AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
@@ -155,5 +120,126 @@ class MainActivity : Activity() {
         } catch (ex: Exception) {
             false
         }
+    }
+
+    private fun fila(nombre: String): View {
+        val f = LinearLayout(this)
+        f.orientation = LinearLayout.HORIZONTAL
+        f.gravity = Gravity.CENTER_VERTICAL
+        f.setPadding(0, 16, 0, 16)
+        val t = TextView(this)
+        t.text = nombre
+        t.textSize = 20f
+        t.setTextColor(Color.WHITE)
+        f.addView(t, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        val bEditar = Button(this)
+        bEditar.text = "Editar"
+        bEditar.setOnClickListener { editar(nombre) }
+        f.addView(bEditar)
+        val bJugar = Button(this)
+        bJugar.text = "Jugar"
+        bJugar.setOnClickListener { abrir(nombre) }
+        f.addView(bJugar)
+        val bMas = Button(this)
+        bMas.text = "Mas"
+        bMas.setOnClickListener { menuProyecto(nombre) }
+        f.addView(bMas)
+        return f
+    }
+
+    private fun menuProyecto(nombre: String) {
+        val opciones = arrayOf("Compartir / guardar copia (.chispa)", "Duplicar", "Borrar")
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle(nombre)
+            .setItems(opciones) { _, cual ->
+                if (cual == 0) {
+                    compartir(nombre)
+                } else if (cual == 1) {
+                    Proyectos.duplicar(this, nombre)
+                    refrescar()
+                } else {
+                    confirmarBorrado(nombre)
+                }
+            }
+            .show()
+    }
+
+    private fun compartir(nombre: String) {
+        try {
+            val uri = Proyectos.exportarZip(this, nombre)
+            if (uri == null) {
+                Toast.makeText(this, "No se pudo crear el archivo", Toast.LENGTH_LONG).show()
+                return
+            }
+            Toast.makeText(this, "Guardado en Descargas: " + nombre + ".chispa", Toast.LENGTH_LONG).show()
+            val envio = Intent(Intent.ACTION_SEND)
+            envio.type = "application/octet-stream"
+            envio.putExtra(Intent.EXTRA_STREAM, uri)
+            envio.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            startActivity(Intent.createChooser(envio, "Compartir proyecto"))
+        } catch (ex: Exception) {
+            Toast.makeText(this, "Error: " + ex.toString(), Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun elegirArchivo() {
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.type = "*/*"
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(i, 7)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val uri = data?.data
+        if (requestCode != 7 || resultCode != RESULT_OK || uri == null) return
+        try {
+            val nombre = Proyectos.importarZip(this, uri)
+            Toast.makeText(this, "Proyecto importado: " + nombre, Toast.LENGTH_LONG).show()
+            refrescar()
+        } catch (ex: Exception) {
+            Toast.makeText(this, "No se pudo importar: " + ex.message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun pedirNombre() {
+        val caja = LinearLayout(this)
+        caja.orientation = LinearLayout.VERTICAL
+        caja.setPadding(48, 16, 48, 0)
+        val campo = EditText(this)
+        campo.inputType = InputType.TYPE_CLASS_TEXT
+        campo.hint = "Nombre del proyecto"
+        caja.addView(campo)
+        val plantillas = plantillasDisponibles()
+        val etiquetas = ArrayList<String>()
+        etiquetas.add("En blanco")
+        for (p in plantillas) etiquetas.add(etiquetaPlantilla(p))
+        val selector = Spinner(this)
+        selector.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, etiquetas)
+        caja.addView(selector)
+        AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert)
+            .setTitle("Nuevo proyecto")
+            .setView(caja)
+            .setPositiveButton("Crear") { _, _ ->
+                val pos = selector.selectedItemPosition
+                val texto = campo.text.toString()
+                val nombre = if (pos == 0) Proyectos.crear(this, texto) else Proyectos.crearDesdePlantilla(this, texto, plantillas[pos - 1])
+                refrescar()
+                abrir(nombre)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun plantillasDisponibles(): List<String> {
+        val l = assets.list("plantillas") ?: return emptyList()
+        return l.toList().sorted()
+    }
+
+    private fun etiquetaPlantilla(p: String): String = when (p) {
+        "clicker" -> "Clicker: toca y suma puntos"
+        "esquivar" -> "Esquivar obstaculos (vertical)"
+        "pelota" -> "Pelota que rebota"
+        else -> p
     }
 }

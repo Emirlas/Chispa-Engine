@@ -1,0 +1,7 @@
+{"id":"escena_1","nombre":"Clicker","fondo":{"color":"#1B2A41"},"objetos":[
+{"id":"obj_001","nombre":"Marcador","color":"#FFFFFF","texto":"Puntos: {puntos}","tamTexto":90,"alinTexto":"centro","estiloTexto":"sombra","tamano":{"ancho":100,"alto":100},"x":0,"y":260,"escala":1.0,"rotacion":0,"visible":true,"capa":3,"scripts":[]},
+{"id":"obj_002","nombre":"Boton","color":"#FF8C1A","tamano":{"ancho":260,"alto":260},"x":0,"y":-60,"escala":1.0,"rotacion":0,"visible":true,"capa":1,"scripts":[
+{"evento":{"tipo":"al_tocar_objeto"},"bloques":[{"tipo":"cambiar","variable":"puntos","valor":1},{"tipo":"rotar","grados":15}]}
+]},
+{"id":"obj_003","nombre":"Consigna","color":"#9FB3C8","texto":"Toca el cuadrado!","tamTexto":50,"alinTexto":"centro","estiloTexto":"normal","tamano":{"ancho":100,"alto":100},"x":0,"y":-290,"escala":1.0,"rotacion":0,"visible":true,"capa":3,"scripts":[]}
+]}
